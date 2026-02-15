@@ -46,6 +46,6 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideMealPlanRepository(mealPlanDao: MealPlanDao, mealDao: MealDao) =
+    fun provideMealPlanRepository(mealPlanDao: MealPlanDao, mealDao: com.example.mealrandomizer.data.MealDao) =
         MealPlanRepository(mealPlanDao, mealDao)
 }
