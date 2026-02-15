@@ -16,8 +16,8 @@ class MealPlanRepository @Inject constructor(
     
     suspend fun saveMealPlan(plan: MealPlan, entries: List<MealPlanEntry>): Long {
         val planId = mealPlanDao.insert(plan)
-        entries.forEach { it.mealPlanId = planId }
-        mealPlanDao.insertEntries(entries)
+        val updatedEntries = entries.map { it.copy(mealPlanId = planId) }
+        mealPlanDao.insertEntries(updatedEntries)
         return planId
     }
     

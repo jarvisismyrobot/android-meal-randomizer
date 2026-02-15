@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.mealrandomizer.R
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import com.example.mealrandomizer.viewmodel.HistoryViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -23,6 +25,7 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
     val mealPlans by viewModel.mealPlans.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
     
     Column(
@@ -65,8 +68,9 @@ fun HistoryScreen(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                // Clear history
-                viewModel.clearHistory()
+                coroutineScope.launch {
+                    viewModel.clearHistory()
+                }
             }
         ) {
             Text(stringResource(R.string.clear_history))
