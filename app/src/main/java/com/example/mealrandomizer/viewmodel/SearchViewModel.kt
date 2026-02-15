@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.mealrandomizer.data.Category
 import com.example.mealrandomizer.data.Meal
 import com.example.mealrandomizer.data.MealRepository
+import com.example.mealrandomizer.data.MealPlanRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
