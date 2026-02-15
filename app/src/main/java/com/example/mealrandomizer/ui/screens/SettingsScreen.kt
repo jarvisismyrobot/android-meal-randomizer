@@ -82,8 +82,8 @@ fun SettingsScreen(
                     coroutineScope.launch {
                         val meals = viewModel.getMealsForExport()
                         val gson = Gson()
-                        val type = object : TypeToken<List<Meal>>() {}.type
-                        val json = gson.toJson(meals, type)
+                        val mealType = object : TypeToken<List<Meal>>() {}.type
+                        val json = gson.toJson(meals, mealType)
                         
                         val shareIntent = Intent().apply {
                             action = Intent.ACTION_SEND
