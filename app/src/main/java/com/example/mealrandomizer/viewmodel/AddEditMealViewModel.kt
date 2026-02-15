@@ -1,9 +1,9 @@
 package com.example.mealrandomizer.viewmodel
 
+import android.database.sqlite.SQLiteConstraintException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mealrandomizer.data.Category
-import com.example.mealrandomizer.data.Difficulty
 import com.example.mealrandomizer.data.Meal
 import com.example.mealrandomizer.data.MealRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -100,16 +100,20 @@ class AddEditMealViewModel @Inject constructor(
             id = if (currentMealId > 0) currentMealId else 0,
             name = trimmedName,
             description = _description.value,
-            difficulty = Difficulty.MEDIUM, // Default difficulty since field is required
             cookingTimeMinutes = cookingTimeInt,
             calories = caloriesInt,
             categories = categories
         )
         
-        if (currentMealId > 0) {
-            repository.updateMeal(meal)
-        } else {
-            repository.insertMeal(meal)
+        try {
+            if (currentMealId > 0) {
+                repository.updateMeal(meal)
+            } else {
+                repository.insertMeal(meal)
+            }
+        } catch (e: android.database.sqlite.SQLiteConstraintException) {
+            _saveError.value = "餸菜名稱已存在，請使用其他名稱"
+            return false
         }
         return true
     }

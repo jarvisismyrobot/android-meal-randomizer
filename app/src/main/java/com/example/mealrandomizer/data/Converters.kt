@@ -4,13 +4,6 @@ import androidx.room.TypeConverter
 import java.util.Date
 
 object Converters {
-    // Difficulty converters
-    @TypeConverter
-    fun fromDifficulty(difficulty: Difficulty): String = difficulty.name
-
-    @TypeConverter
-    fun toDifficulty(name: String): Difficulty = Difficulty.valueOf(name)
-
     // Date converters (store as Long timestamp)
     @TypeConverter
     fun fromTimestamp(value: Long?): Date? = value?.let { Date(it) }

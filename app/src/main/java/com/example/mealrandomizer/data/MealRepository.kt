@@ -1,10 +1,13 @@
 package com.example.mealrandomizer.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class MealRepository @Inject constructor(private val mealDao: MealDao) {
     fun getAllMeals(): Flow<List<Meal>> = mealDao.getAll()
+    
+    suspend fun getAllMealsList(): List<Meal> = mealDao.getAll().first()
 
     suspend fun getMeal(id: Long): Meal? = mealDao.getById(id)
 

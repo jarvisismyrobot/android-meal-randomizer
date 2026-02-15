@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,7 +13,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [Meal::class, MealPlan::class, MealPlanEntry::class],
-    version = 2,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -36,6 +37,58 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
+        
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Step 1: Delete duplicate meals, keeping the one with the smallest id
+                database.execSQL("""
+                    DELETE FROM meals 
+                    WHERE id IN (
+                        SELECT m2.id 
+                        FROM meals m1 
+                        JOIN meals m2 ON m1.name = m2.name 
+                        WHERE m1.id < m2.id
+                    )
+                """.trimIndent())
+                
+                // Step 2: Create unique index on name column
+                database.execSQL("CREATE UNIQUE INDEX index_meals_name ON meals(name)")
+            }
+        }
+        
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Create new table without difficulty column
+                database.execSQL("""
+                    CREATE TABLE meals_new (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        name TEXT NOT NULL,
+                        description TEXT NOT NULL,
+                        cookingTimeMinutes INTEGER NOT NULL,
+                        calories INTEGER,
+                        categories TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        lastGenerated INTEGER
+                    )
+                """.trimIndent())
+                
+                // Copy data from old table, excluding difficulty column
+                database.execSQL("""
+                    INSERT INTO meals_new (id, name, description, cookingTimeMinutes, calories, categories, createdAt, lastGenerated)
+                    SELECT id, name, description, cookingTimeMinutes, calories, categories, createdAt, lastGenerated
+                    FROM meals
+                """.trimIndent())
+                
+                // Drop old table
+                database.execSQL("DROP TABLE meals")
+                
+                // Rename new table
+                database.execSQL("ALTER TABLE meals_new RENAME TO meals")
+                
+                // Recreate unique index
+                database.execSQL("CREATE UNIQUE INDEX index_meals_name ON meals(name)")
+            }
+        }
 
         fun getDatabase(context: Context, scope: CoroutineScope): AppDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -44,6 +97,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "meal_randomizer_db"
                 ).addCallback(MealDatabaseCallback(scope))
+                    .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
