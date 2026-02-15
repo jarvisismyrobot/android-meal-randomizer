@@ -131,3 +131,4 @@ class MealPlanRepository @Inject constructor(
             availableMeals.shuffled().take(count)
         }
     }
+}
