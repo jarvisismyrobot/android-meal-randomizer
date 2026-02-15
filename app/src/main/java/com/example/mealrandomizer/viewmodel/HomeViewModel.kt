@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mealrandomizer.data.Meal
 import com.example.mealrandomizer.data.MealRepository
+import com.example.mealrandomizer.data.sampleMeals
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -21,6 +22,12 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val meal = repository.getRandomMeal()
             onResult(meal)
+        }
+    }
+
+    fun preloadSampleMeals() {
+        viewModelScope.launch {
+            sampleMeals.forEach { repository.insertMeal(it) }
         }
     }
 }

@@ -7,11 +7,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.mealrandomizer.R
+import com.example.mealrandomizer.viewmodel.HomeViewModel
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(
+    navController: NavController,
+    viewModel: HomeViewModel = hiltViewModel()
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -42,6 +47,10 @@ fun HomeScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = { navController.navigate("search") }) {
             Text(stringResource(R.string.search))
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = { viewModel.preloadSampleMeals() }) {
+            Text(stringResource(R.string.preload_sample_meals))
         }
     }
 }

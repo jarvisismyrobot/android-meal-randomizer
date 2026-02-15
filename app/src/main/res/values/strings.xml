@@ -19,6 +19,8 @@
     <string name="search">搜尋</string>
     <string name="save">儲存</string>
     <string name="cancel">取消</string>
+    <string name="add_edit_meal_title">新增/編輯餐點</string>
+    <string name="preload_sample_meals">載入樣本餸菜</string>
     <string name="easy">容易</string>
     <string name="medium">中等</string>
     <string name="hard">困難</string>
