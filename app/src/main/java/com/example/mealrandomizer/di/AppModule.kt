@@ -46,6 +46,6 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideMealPlanRepository(mealPlanDao: MealPlanDao) =
-        MealPlanRepository(mealPlanDao)
+    fun provideMealPlanRepository(mealPlanDao: MealPlanDao, mealDao: MealDao) =
+        MealPlanRepository(mealPlanDao, mealDao)
 }
