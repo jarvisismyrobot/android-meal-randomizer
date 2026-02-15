@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_meal">加餸</string>
+    <string name="app_name">煮乜食 Meal Randomizer</string>
+    <string name="breakfast">早餐</string>
+    <string name="calories">卡路里 (kcal)</string>
+    <string name="cancel">取消</string>
+    <string name="categories">類別</string>
+    <string name="clear_history">清除歷史</string>
+    <string name="cooking_time">烹調時間 (分鐘)</string>
+    <string name="day">日</string>
+    <string name="days">天數</string>
+    <string name="delete_meal">刪除</string>
+    <string name="description">描述</string>
+    <string name="difficulty">難度</string>
+    <string name="dinner">晚餐</string>
+    <string name="easy">容易</string>
+    <string name="edit_meal">編輯</string>
+    <string name="generate_meal">隨機選擇餸菜</string>
+    <string name="hard">困難</string>
+    <string name="history">歷史記錄</string>
+    <string name="lunch">午餐</string>
+    <string name="meal_generated">已生成餸菜</string>
+    <string name="meal_name">餸菜名稱</string>
+    <string name="medium">中等</string>
+    <string name="no_repeat">不重複</string>
+    <string name="save">儲存</string>
+    <string name="search">搜尋</string>
+    <string name="settings">設定</string>
+    <string name="share">分享</string>
+    <style name="Theme.MealRandomizer" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#FF6200EE</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>
