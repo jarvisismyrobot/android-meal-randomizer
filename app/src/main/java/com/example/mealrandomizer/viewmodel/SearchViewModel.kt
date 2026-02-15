@@ -14,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val repository: MealRepository
+    private val repository: MealRepository,
+    private val mealPlanRepository: MealPlanRepository
 ) : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -45,7 +46,7 @@ class SearchViewModel @Inject constructor(
         } else if (query.isBlank()) {
             // Filter by categories only
             if (selectedCategories.isEmpty()) {
-                repository.getAllMeals()
+                repository.getAllMeals().map { it.distinctBy { it.id } }
             } else {
                 val flows = selectedCategories.map { category ->
                     repository.getMealsByCategory(category)
@@ -58,7 +59,7 @@ class SearchViewModel @Inject constructor(
             // Search with query, then filter by categories
             repository.searchMeals(query).map { meals ->
                 if (selectedCategories.isEmpty()) {
-                    meals
+                    meals.distinctBy { it.id }
                 } else {
                     meals.filter { meal ->
                         meal.categories.any { it in selectedCategories }
@@ -92,7 +93,13 @@ class SearchViewModel @Inject constructor(
         }
     }
     
-    suspend fun deleteMeal(meal: Meal) {
+    suspend fun deleteMeal(meal: Meal): Boolean {
+        // Check if meal is used in any meal plan
+        val isUsed = mealPlanRepository.isMealUsedInPlans(meal.id)
+        if (isUsed) {
+            return false // Meal is used, cannot delete
+        }
         repository.deleteMeal(meal)
+        return true
     }
 }

@@ -37,6 +37,11 @@ class MealPlanRepository @Inject constructor(
         return latestPlan?.let { mealPlanDao.getPlanWithEntries(it.id) }
     }
     
+    suspend fun isMealUsedInPlans(mealId: Long): Boolean {
+        val usageCount = mealPlanDao.countMealUsage(mealId)
+        return usageCount > 0
+    }
+    
     fun getLatestMealPlanWithEntriesFlow(): Flow<MealPlanWithEntries?> = 
         mealPlanDao.getAll()
             .map { plans -> plans.firstOrNull() }
@@ -68,13 +73,20 @@ class MealPlanRepository @Inject constructor(
         val dinnerMeals = mealDao.getByCategoryList(Category.DINNER)
         
         val entries = mutableListOf<MealPlanEntry>()
+        val allUsedMealIds = mutableSetOf<Long>() // For global avoidRepeats
         
         for (day in 0 until days) {
+            val dayUsedMealIds = mutableSetOf<Long>() // For within-day duplicates prevention
+            
             // Generate breakfast dishes
+            val breakfastExcludedIds = mutableSetOf<Long>()
+            if (avoidRepeats) breakfastExcludedIds.addAll(allUsedMealIds)
+            breakfastExcludedIds.addAll(dayUsedMealIds)
+            
             val breakfastSelection = selectRandomMeals(
                 breakfastMeals,
                 dishesPerMeal,
-                if (avoidRepeats) entries.map { it.mealId }.toSet() else emptySet()
+                breakfastExcludedIds
             )
             
             breakfastSelection.forEachIndexed { index, meal ->
@@ -87,13 +99,19 @@ class MealPlanRepository @Inject constructor(
                         position = index
                     )
                 )
+                allUsedMealIds.add(meal.id)
+                dayUsedMealIds.add(meal.id)
             }
             
             // Generate lunch dishes
+            val lunchExcludedIds = mutableSetOf<Long>()
+            if (avoidRepeats) lunchExcludedIds.addAll(allUsedMealIds)
+            lunchExcludedIds.addAll(dayUsedMealIds)
+            
             val lunchSelection = selectRandomMeals(
                 lunchMeals,
                 dishesPerMeal,
-                if (avoidRepeats) entries.map { it.mealId }.toSet() else emptySet()
+                lunchExcludedIds
             )
             
             lunchSelection.forEachIndexed { index, meal ->
@@ -106,13 +124,19 @@ class MealPlanRepository @Inject constructor(
                         position = index
                     )
                 )
+                allUsedMealIds.add(meal.id)
+                dayUsedMealIds.add(meal.id)
             }
             
             // Generate dinner dishes
+            val dinnerExcludedIds = mutableSetOf<Long>()
+            if (avoidRepeats) dinnerExcludedIds.addAll(allUsedMealIds)
+            dinnerExcludedIds.addAll(dayUsedMealIds)
+            
             val dinnerSelection = selectRandomMeals(
                 dinnerMeals,
                 dishesPerMeal,
-                if (avoidRepeats) entries.map { it.mealId }.toSet() else emptySet()
+                dinnerExcludedIds
             )
             
             dinnerSelection.forEachIndexed { index, meal ->
@@ -125,6 +149,8 @@ class MealPlanRepository @Inject constructor(
                         position = index
                     )
                 )
+                allUsedMealIds.add(meal.id)
+                dayUsedMealIds.add(meal.id)
             }
         }
         

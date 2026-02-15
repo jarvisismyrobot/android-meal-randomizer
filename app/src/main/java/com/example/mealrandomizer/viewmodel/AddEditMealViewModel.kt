@@ -33,6 +33,9 @@ class AddEditMealViewModel @Inject constructor(
     private val _dinnerSelected = MutableStateFlow(true)
     val dinnerSelected: StateFlow<Boolean> = _dinnerSelected
     
+    private val _saveError = MutableStateFlow<String?>(null)
+    val saveError: StateFlow<String?> = _saveError
+    
     private var currentMealId: Long = -1L
 
     fun loadMeal(mealId: Long) {
@@ -62,37 +65,52 @@ class AddEditMealViewModel @Inject constructor(
     fun updateLunchSelected(selected: Boolean) { _lunchSelected.value = selected }
     fun updateDinnerSelected(selected: Boolean) { _dinnerSelected.value = selected }
 
-    fun saveMeal() {
-        viewModelScope.launch {
-            val cookingTimeInt = _cookingTime.value.toIntOrNull() ?: 0
-            val caloriesInt = _calories.value.toIntOrNull()
-            
-            // Build categories list based on selected meal times
-            val categories = mutableListOf<Category>()
-            if (_breakfastSelected.value) categories.add(Category.BREAKFAST)
-            if (_lunchSelected.value) categories.add(Category.LUNCH)
-            if (_dinnerSelected.value) categories.add(Category.DINNER)
-            
-            // If no meal time selected, default to all three
-            if (categories.isEmpty()) {
-                categories.addAll(listOf(Category.BREAKFAST, Category.LUNCH, Category.DINNER))
-            }
-            
-            val meal = Meal(
-                id = if (currentMealId > 0) currentMealId else 0,
-                name = _name.value,
-                description = _description.value,
-                difficulty = Difficulty.MEDIUM, // Default difficulty since field is required
-                cookingTimeMinutes = cookingTimeInt,
-                calories = caloriesInt,
-                categories = categories
-            )
-            
-            if (currentMealId > 0) {
-                repository.updateMeal(meal)
-            } else {
-                repository.insertMeal(meal)
-            }
+    suspend fun saveMeal(): Boolean {
+        // Validate name is not empty or blank
+        val trimmedName = _name.value.trim()
+        if (trimmedName.isBlank()) {
+            _saveError.value = "餸菜名稱不能為空"
+            return false
         }
+        
+        // Check for duplicate name (case-insensitive, trim)
+        val existingCount = repository.countMealsByName(trimmedName, excludeId = currentMealId)
+        if (existingCount > 0) {
+            _saveError.value = "餸菜名稱已存在，請使用其他名稱"
+            return false
+        }
+        
+        _saveError.value = null
+        
+        val cookingTimeInt = _cookingTime.value.toIntOrNull() ?: 0
+        val caloriesInt = _calories.value.toIntOrNull()
+        
+        // Build categories list based on selected meal times
+        val categories = mutableListOf<Category>()
+        if (_breakfastSelected.value) categories.add(Category.BREAKFAST)
+        if (_lunchSelected.value) categories.add(Category.LUNCH)
+        if (_dinnerSelected.value) categories.add(Category.DINNER)
+        
+        // If no meal time selected, default to all three
+        if (categories.isEmpty()) {
+            categories.addAll(listOf(Category.BREAKFAST, Category.LUNCH, Category.DINNER))
+        }
+        
+        val meal = Meal(
+            id = if (currentMealId > 0) currentMealId else 0,
+            name = trimmedName,
+            description = _description.value,
+            difficulty = Difficulty.MEDIUM, // Default difficulty since field is required
+            cookingTimeMinutes = cookingTimeInt,
+            calories = caloriesInt,
+            categories = categories
+        )
+        
+        if (currentMealId > 0) {
+            repository.updateMeal(meal)
+        } else {
+            repository.insertMeal(meal)
+        }
+        return true
     }
 }

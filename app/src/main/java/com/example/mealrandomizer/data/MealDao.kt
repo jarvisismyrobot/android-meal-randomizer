@@ -37,4 +37,8 @@ interface MealDao {
 
     @Query("SELECT * FROM meals LIMIT 1")
     suspend fun getAny(): Meal?
+
+    // Check if a meal with the same name exists (case-insensitive, ignoring current meal)
+    @Query("SELECT COUNT(*) FROM meals WHERE LOWER(TRIM(name)) = LOWER(TRIM(:name)) AND id != :excludeId")
+    suspend fun countByName(name: String, excludeId: Long = 0): Int
 }

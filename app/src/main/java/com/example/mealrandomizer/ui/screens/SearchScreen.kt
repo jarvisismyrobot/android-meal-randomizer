@@ -33,6 +33,8 @@ fun SearchScreen(
     val filterDinner by viewModel.filterDinner.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     var mealToDelete by remember { mutableStateOf<Meal?>(null) }
+    var backButtonEnabled by remember { mutableStateOf(true) }
+    var showDeleteError by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -117,8 +119,14 @@ fun SearchScreen(
         }
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.fillMaxWidth()
+            onClick = {
+                if (backButtonEnabled) {
+                    backButtonEnabled = false
+                    navController.popBackStack()
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = backButtonEnabled
         ) {
             Text("返回")
         }
@@ -134,8 +142,13 @@ fun SearchScreen(
                 Button(
                     onClick = {
                         coroutineScope.launch {
-                            viewModel.deleteMeal(mealToDelete!!)
-                            mealToDelete = null
+                            val success = viewModel.deleteMeal(mealToDelete!!)
+                            if (success) {
+                                mealToDelete = null
+                            } else {
+                                mealToDelete = null
+                                showDeleteError = true
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -146,6 +159,20 @@ fun SearchScreen(
             dismissButton = {
                 Button(onClick = { mealToDelete = null }) {
                     Text("取消")
+                }
+            }
+        )
+    }
+    
+    // Delete error dialog
+    if (showDeleteError) {
+        AlertDialog(
+            onDismissRequest = { showDeleteError = false },
+            title = { Text("無法刪除") },
+            text = { Text("此餸菜已出現在餐單中，無法刪除") },
+            confirmButton = {
+                Button(onClick = { showDeleteError = false }) {
+                    Text("確定")
                 }
             }
         )

@@ -12,6 +12,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.mealrandomizer.R
 import com.example.mealrandomizer.viewmodel.AddEditMealViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddEditMealScreen(
@@ -26,6 +27,10 @@ fun AddEditMealScreen(
     val breakfastSelected by viewModel.breakfastSelected.collectAsState()
     val lunchSelected by viewModel.lunchSelected.collectAsState()
     val dinnerSelected by viewModel.dinnerSelected.collectAsState()
+    val saveError by viewModel.saveError.collectAsState()
+    var cancelButtonEnabled by remember { mutableStateOf(true) }
+    var saveButtonEnabled by remember { mutableStateOf(true) }
+    val coroutineScope = rememberCoroutineScope()
     
     LaunchedEffect(mealId) {
         if (mealId > 0) {
@@ -42,7 +47,17 @@ fun AddEditMealScreen(
             text = if (mealId > 0) "編輯餸菜" else "新增餸菜",
             style = MaterialTheme.typography.headlineMedium
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+        // Error message display
+        saveError?.let { error ->
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+        Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = name,
             onValueChange = { viewModel.updateName(it) },
@@ -108,17 +123,34 @@ fun AddEditMealScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Button(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier.weight(1f)
+                onClick = {
+                    if (cancelButtonEnabled) {
+                        cancelButtonEnabled = false
+                        navController.popBackStack()
+                    }
+                },
+                modifier = Modifier.weight(1f),
+                enabled = cancelButtonEnabled
             ) {
                 Text(stringResource(R.string.cancel))
             }
             Button(
                 onClick = {
-                    viewModel.saveMeal()
-                    navController.popBackStack()
+                    if (saveButtonEnabled) {
+                        saveButtonEnabled = false
+                        coroutineScope.launch {
+                            val success = viewModel.saveMeal()
+                            if (success) {
+                                navController.popBackStack()
+                            } else {
+                                // Re-enable button on error
+                                saveButtonEnabled = true
+                            }
+                        }
+                    }
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                enabled = saveButtonEnabled
             ) {
                 Text(stringResource(R.string.save))
             }
