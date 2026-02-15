@@ -1,10 +1,6 @@
 package com.example.mealrandomizer.data
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,12 +41,12 @@ class MealPlanRepository @Inject constructor(
             .flatMapLatest { plan ->
                 if (plan != null) {
                     // Create a flow that fetches the full plan with entries
-                    kotlinx.coroutines.flow.flow {
+                    flow {
                         val planWithEntries = mealPlanDao.getPlanWithEntries(plan.id)
                         emit(planWithEntries)
                     }
                 } else {
-                    kotlinx.coroutines.flow.flowOf(null)
+                    flowOf(null)
                 }
             }
     
