@@ -39,7 +39,7 @@ class AddEditMealViewModel @Inject constructor(
         if (mealId <= 0) return
         currentMealId = mealId
         viewModelScope.launch {
-            val meal = repository.getMealById(mealId)
+            val meal = repository.getMeal(mealId)
             meal?.let {
                 _name.value = it.name
                 _description.value = it.description
