@@ -56,7 +56,7 @@ fun HomeScreen(
                             }
                         }
                     }) {
-                        Icon(Icons.Filled.Casino, contentDescription = "隨機選擇餸菜")
+                        Icon(Icons.Filled.Refresh, contentDescription = "重新生成餐單")
                     }
                     IconButton(onClick = { navController.navigate("settings") }) {
                         Icon(Icons.Filled.Settings, contentDescription = "設定")
@@ -146,14 +146,6 @@ fun MealPlanDisplay(
                         text = "${plan.days}日餐單",
                         style = MaterialTheme.typography.headlineMedium
                     )
-                    Text(
-                        text = "已為你生成未來${plan.days}日的餐單",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = "避免重複: ${if (plan.avoidRepeats) "是" else "否"}",
-                        style = MaterialTheme.typography.bodySmall
-                    )
                 }
             }
         }
@@ -196,52 +188,69 @@ fun DayCard(
             )
             Spacer(modifier = Modifier.height(12.dp))
             
-            // Breakfast section
-            Text(
-                text = "早餐",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.secondary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            if (breakfastMeals.isEmpty()) {
-                Text("隨機選擇3款早餐菜式", style = MaterialTheme.typography.titleMedium)
-            } else {
-                breakfastMeals.forEachIndexed { index, meal ->
-                    Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.titleMedium)
+            // Horizontal layout for meal times
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Breakfast column
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "早餐",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    if (breakfastMeals.isEmpty()) {
+                        Text("選擇3款", style = MaterialTheme.typography.titleMedium)
+                    } else {
+                        breakfastMeals.forEachIndexed { index, meal ->
+                            Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
                 }
-            }
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // Lunch section
-            Text(
-                text = "午餐",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.secondary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            if (lunchMeals.isEmpty()) {
-                Text("隨機選擇3款午餐菜式", style = MaterialTheme.typography.titleMedium)
-            } else {
-                lunchMeals.forEachIndexed { index, meal ->
-                    Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.titleMedium)
+                
+                // Lunch column  
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "午餐",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    if (lunchMeals.isEmpty()) {
+                        Text("選擇3款", style = MaterialTheme.typography.titleMedium)
+                    } else {
+                        lunchMeals.forEachIndexed { index, meal ->
+                            Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
                 }
-            }
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // Dinner section
-            Text(
-                text = "晚餐",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.secondary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            if (dinnerMeals.isEmpty()) {
-                Text("隨機選擇3款晚餐菜式", style = MaterialTheme.typography.titleMedium)
-            } else {
-                dinnerMeals.forEachIndexed { index, meal ->
-                    Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.titleMedium)
+                
+                // Dinner column
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "晚餐",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    if (dinnerMeals.isEmpty()) {
+                        Text("選擇3款", style = MaterialTheme.typography.titleMedium)
+                    } else {
+                        dinnerMeals.forEachIndexed { index, meal ->
+                            Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
                 }
             }
         }
