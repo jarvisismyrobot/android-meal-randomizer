@@ -43,6 +43,10 @@ interface MealPlanDao {
     @Transaction
     @Query("SELECT * FROM meal_plans WHERE id = :id")
     suspend fun getPlanWithEntries(id: Long): MealPlanWithEntries?
+    
+    // Check if a meal is used in any meal plan
+    @Query("SELECT COUNT(*) FROM meal_plan_entries WHERE mealId = :mealId")
+    suspend fun countMealUsage(mealId: Long): Int
 }
 
 data class MealPlanWithEntries(
