@@ -1,5 +1,7 @@
 package com.example.mealrandomizer.data
 
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -66,7 +68,6 @@ class MealPlanRepository @Inject constructor(
         val dinnerMeals = mealDao.getByCategoryList(Category.DINNER)
         
         val entries = mutableListOf<MealPlanEntry>()
-        var mealIdCounter = 0L
         
         for (day in 0 until days) {
             // Generate breakfast dishes
@@ -86,7 +87,6 @@ class MealPlanRepository @Inject constructor(
                         position = index
                     )
                 )
-                mealIdCounter = meal.id
             }
             
             // Generate lunch dishes
@@ -106,7 +106,6 @@ class MealPlanRepository @Inject constructor(
                         position = index
                     )
                 )
-                mealIdCounter = meal.id
             }
             
             // Generate dinner dishes
@@ -126,7 +125,6 @@ class MealPlanRepository @Inject constructor(
                         position = index
                     )
                 )
-                mealIdCounter = meal.id
             }
         }
         

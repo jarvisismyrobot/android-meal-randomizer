@@ -1,5 +1,7 @@
 package com.example.mealrandomizer.viewmodel
 
+@file:OptIn(kotlinx.coroutines.FlowPreview::class, kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mealrandomizer.data.Meal

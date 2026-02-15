@@ -32,7 +32,7 @@ fun HomeScreen(
     // Auto-generate meal plan on first launch if none exists
     LaunchedEffect(Unit) {
         if (currentMealPlanWithEntries == null) {
-            viewModel.generateMealPlanAsync { plan ->
+            viewModel.generateMealPlanAsync { _ ->
                 // Plan generated, state will update via flow
             }
         }
@@ -50,7 +50,7 @@ fun HomeScreen(
                         Icon(Icons.Filled.Add, contentDescription = "加餸")
                     }
                     IconButton(onClick = {
-                        viewModel.generateMealPlanAsync { plan ->
+                        viewModel.generateMealPlanAsync { _ ->
                             coroutineScope.launch {
                                 snackbarHostState.showSnackbar("已生成7日餐單")
                             }
