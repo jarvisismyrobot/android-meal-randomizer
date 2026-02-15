@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.mealrandomizer.data.Meal
 import com.example.mealrandomizer.data.MealPlan
 import com.example.mealrandomizer.data.MealPlanRepository
+import com.example.mealrandomizer.data.MealPlanWithEntries
 import com.example.mealrandomizer.data.MealRepository
 import com.example.mealrandomizer.data.sampleMeals
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +27,9 @@ class HomeViewModel @Inject constructor(
     
     val currentMealPlan = mealPlanRepository.getAllMealPlans()
         .map { plans -> plans.firstOrNull() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+    
+    val currentMealPlanWithEntries = mealPlanRepository.getLatestMealPlanWithEntriesFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun generateRandomMeal(onResult: (Meal?) -> Unit) {

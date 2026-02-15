@@ -14,8 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.mealrandomizer.R
-import com.example.mealrandomizer.data.Meal
-import com.example.mealrandomizer.data.MealPlan
+import com.example.mealrandomizer.data.*
 import com.example.mealrandomizer.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -28,11 +27,11 @@ fun HomeScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    val currentMealPlan by viewModel.currentMealPlan.collectAsState()
+    val currentMealPlanWithEntries by viewModel.currentMealPlanWithEntries.collectAsState()
     
     // Auto-generate meal plan on first launch if none exists
     LaunchedEffect(Unit) {
-        if (currentMealPlan == null) {
+        if (currentMealPlanWithEntries == null) {
             viewModel.generateMealPlanAsync { plan ->
                 // Plan generated, state will update via flow
             }
@@ -96,7 +95,7 @@ fun HomeScreen(
             )
             
             // Meal plan display
-            if (currentMealPlan == null) {
+            if (currentMealPlanWithEntries == null) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -105,7 +104,7 @@ fun HomeScreen(
                 }
             } else {
                 MealPlanDisplay(
-                    mealPlan = currentMealPlan!!,
+                    mealPlanWithEntries = currentMealPlanWithEntries!!,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 16.dp)
@@ -117,11 +116,31 @@ fun HomeScreen(
 
 @Composable
 fun MealPlanDisplay(
-    mealPlan: MealPlan,
+    mealPlanWithEntries: MealPlanWithEntries,
     modifier: Modifier = Modifier
 ) {
-    // For now, show a placeholder since we don't have the full meal plan with entries
-    // In a real implementation, you would fetch MealPlanWithEntries
+    val plan = mealPlanWithEntries.mealPlan
+    val entries = mealPlanWithEntries.entries
+    
+    // Group entries by day and meal time
+    val daysMap = mutableMapOf<Int, MutableMap<Int, List<MealPlanEntryWithMeal>>>()
+    
+    entries.forEach { entryWithMeal ->
+        val day = entryWithMeal.entry.dayIndex
+        val mealTime = entryWithMeal.entry.mealTime
+        
+        val dayMap = daysMap.getOrPut(day) { mutableMapOf() }
+        val mealList = dayMap.getOrPut(mealTime) { mutableListOf() }
+        (mealList as MutableList).add(entryWithMeal)
+    }
+    
+    // Sort meals by position
+    daysMap.values.forEach { dayMap ->
+        dayMap.values.forEach { mealList ->
+            (mealList as MutableList).sortBy { it.entry.position }
+        }
+    }
+    
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -134,66 +153,107 @@ fun MealPlanDisplay(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "7日餐單",
+                        text = "${plan.days}日餐單",
                         style = MaterialTheme.typography.headlineMedium
                     )
                     Text(
-                        text = "已為你生成未來${mealPlan.days}日的餐單",
+                        text = "已為你生成未來${plan.days}日的餐單",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "避免重複: ${if (mealPlan.avoidRepeats) "是" else "否"}",
+                        text = "避免重複: ${if (plan.avoidRepeats) "是" else "否"}",
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
             }
         }
         
-        // Placeholder for days
-        items(mealPlan.days) { dayIndex ->
-            DayCard(dayIndex = dayIndex + 1)
+        // Display each day
+        items(plan.days) { dayIndex ->
+            val dayMap = daysMap[dayIndex] ?: emptyMap()
+            val breakfastMeals = (dayMap[0] ?: emptyList()).map { it.meal }
+            val lunchMeals = (dayMap[1] ?: emptyList()).map { it.meal }
+            val dinnerMeals = (dayMap[2] ?: emptyList()).map { it.meal }
+            
+            DayCard(
+                dayIndex = dayIndex + 1,
+                breakfastMeals = breakfastMeals,
+                lunchMeals = lunchMeals,
+                dinnerMeals = dinnerMeals
+            )
         }
     }
 }
 
 @Composable
-fun DayCard(dayIndex: Int) {
+fun DayCard(
+    dayIndex: Int,
+    breakfastMeals: List<Meal>,
+    lunchMeals: List<Meal>,
+    dinnerMeals: List<Meal>
+) {
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
                 text = "第 $dayIndex 日",
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
-            // Breakfast
+            // Breakfast section
             Text(
                 text = "早餐",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.secondary
             )
-            Text("隨機選擇3款早餐菜式")
+            Spacer(modifier = Modifier.height(4.dp))
+            if (breakfastMeals.isEmpty()) {
+                Text("隨機選擇3款早餐菜式", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                breakfastMeals.forEachIndexed { index, meal ->
+                    Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
-            // Lunch
+            // Lunch section
             Text(
-                text = "午餐", 
-                style = MaterialTheme.typography.titleMedium
+                text = "午餐",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.secondary
             )
-            Text("隨機選擇3款午餐菜式")
+            Spacer(modifier = Modifier.height(4.dp))
+            if (lunchMeals.isEmpty()) {
+                Text("隨機選擇3款午餐菜式", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                lunchMeals.forEachIndexed { index, meal ->
+                    Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
-            // Dinner
+            // Dinner section
             Text(
                 text = "晚餐",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.secondary
             )
-            Text("隨機選擇3款晚餐菜式")
+            Spacer(modifier = Modifier.height(4.dp))
+            if (dinnerMeals.isEmpty()) {
+                Text("隨機選擇3款晚餐菜式", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                dinnerMeals.forEachIndexed { index, meal ->
+                    Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
         }
     }
 }

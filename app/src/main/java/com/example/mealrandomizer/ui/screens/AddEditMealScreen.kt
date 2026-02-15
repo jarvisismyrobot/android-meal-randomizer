@@ -1,8 +1,10 @@
 package com.example.mealrandomizer.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -18,9 +20,11 @@ fun AddEditMealScreen(
 ) {
     val name by viewModel.name.collectAsState()
     val description by viewModel.description.collectAsState()
-    val difficulty by viewModel.difficulty.collectAsState()
     val cookingTime by viewModel.cookingTime.collectAsState()
     val calories by viewModel.calories.collectAsState()
+    val breakfastSelected by viewModel.breakfastSelected.collectAsState()
+    val lunchSelected by viewModel.lunchSelected.collectAsState()
+    val dinnerSelected by viewModel.dinnerSelected.collectAsState()
 
     Column(
         modifier = Modifier
@@ -46,12 +50,38 @@ fun AddEditMealScreen(
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = difficulty,
-            onValueChange = { viewModel.updateDifficulty(it) },
-            label = { Text(stringResource(R.string.difficulty)) },
-            modifier = Modifier.fillMaxWidth()
+        // Meal time selection checkboxes
+        Text(
+            text = "適用時段",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(vertical = 4.dp)
         )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = breakfastSelected,
+                    onCheckedChange = { viewModel.updateBreakfastSelected(it) }
+                )
+                Text("早餐", modifier = Modifier.padding(start = 4.dp))
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = lunchSelected,
+                    onCheckedChange = { viewModel.updateLunchSelected(it) }
+                )
+                Text("午餐", modifier = Modifier.padding(start = 4.dp))
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = dinnerSelected,
+                    onCheckedChange = { viewModel.updateDinnerSelected(it) }
+                )
+                Text("晚餐", modifier = Modifier.padding(start = 4.dp))
+            }
+        }
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = cookingTime,
