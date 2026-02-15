@@ -39,9 +39,9 @@ abstract class AppDatabase : RoomDatabase() {
         private var INSTANCE: AppDatabase? = null
         
         private val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(database: SupportSQLiteDatabase) {
+            override fun migrate(db: SupportSQLiteDatabase) {
                 // Step 1: Delete duplicate meals, keeping the one with the smallest id
-                database.execSQL("""
+                db.execSQL("""
                     DELETE FROM meals 
                     WHERE id IN (
                         SELECT m2.id 
@@ -52,14 +52,14 @@ abstract class AppDatabase : RoomDatabase() {
                 """.trimIndent())
                 
                 // Step 2: Create unique index on name column
-                database.execSQL("CREATE UNIQUE INDEX index_meals_name ON meals(name)")
+                db.execSQL("CREATE UNIQUE INDEX index_meals_name ON meals(name)")
             }
         }
         
         private val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(database: SupportSQLiteDatabase) {
+            override fun migrate(db: SupportSQLiteDatabase) {
                 // Create new table without difficulty column
-                database.execSQL("""
+                db.execSQL("""
                     CREATE TABLE meals_new (
                         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         name TEXT NOT NULL,
@@ -73,20 +73,20 @@ abstract class AppDatabase : RoomDatabase() {
                 """.trimIndent())
                 
                 // Copy data from old table, excluding difficulty column
-                database.execSQL("""
+                db.execSQL("""
                     INSERT INTO meals_new (id, name, description, cookingTimeMinutes, calories, categories, createdAt, lastGenerated)
                     SELECT id, name, description, cookingTimeMinutes, calories, categories, createdAt, lastGenerated
                     FROM meals
                 """.trimIndent())
                 
                 // Drop old table
-                database.execSQL("DROP TABLE meals")
+                db.execSQL("DROP TABLE meals")
                 
                 // Rename new table
-                database.execSQL("ALTER TABLE meals_new RENAME TO meals")
+                db.execSQL("ALTER TABLE meals_new RENAME TO meals")
                 
                 // Recreate unique index
-                database.execSQL("CREATE UNIQUE INDEX index_meals_name ON meals(name)")
+                db.execSQL("CREATE UNIQUE INDEX index_meals_name ON meals(name)")
             }
         }
 

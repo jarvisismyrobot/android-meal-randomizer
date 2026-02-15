@@ -30,7 +30,6 @@ fun SettingsScreen(
     navController: NavController,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val daysToPlan by viewModel.daysToPlan.collectAsState()
     val avoidRepeats by viewModel.avoidRepeats.collectAsState()
     var backButtonEnabled by remember { mutableStateOf(true) }
     var exportInProgress by remember { mutableStateOf(false) }
