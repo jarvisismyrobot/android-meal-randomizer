@@ -28,6 +28,9 @@ fun SearchScreen(
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState(initial = emptyList())
+    val filterBreakfast by viewModel.filterBreakfast.collectAsState()
+    val filterLunch by viewModel.filterLunch.collectAsState()
+    val filterDinner by viewModel.filterDinner.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     var mealToDelete by remember { mutableStateOf<Meal?>(null) }
 
@@ -48,6 +51,40 @@ fun SearchScreen(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Meal time filter
+        Text(
+            text = "適用時段篩選:",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Checkbox(
+                    checked = filterBreakfast,
+                    onCheckedChange = { viewModel.setFilterBreakfast(it) }
+                )
+                Text("早餐")
+            }
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Checkbox(
+                    checked = filterLunch,
+                    onCheckedChange = { viewModel.setFilterLunch(it) }
+                )
+                Text("午餐")
+            }
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Checkbox(
+                    checked = filterDinner,
+                    onCheckedChange = { viewModel.setFilterDinner(it) }
+                )
+                Text("晚餐")
+            }
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "找到 ${searchResults.size} 個結果",
@@ -135,26 +172,31 @@ fun MealItemCard(
                     modifier = Modifier.weight(1f)
                 )
                 Row {
+                    Spacer(modifier = Modifier.width(4.dp))
                     IconButton(
                         onClick = onEdit,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "編輯",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
+                    Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
                         onClick = onDelete,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "刪除",
-                            tint = MaterialTheme.colorScheme.error
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
+                    Spacer(modifier = Modifier.width(4.dp))
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -164,11 +206,6 @@ fun MealItemCard(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Row {
-                Text(
-                    text = "難度: ${meal.difficulty}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "時間: ${meal.cookingTimeMinutes}分鐘",
                     style = MaterialTheme.typography.bodySmall

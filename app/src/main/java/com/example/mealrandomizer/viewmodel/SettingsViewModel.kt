@@ -14,7 +14,7 @@ class SettingsViewModel @Inject constructor() : ViewModel() {
     private val _daysToPlan = MutableStateFlow(7)
     val daysToPlan: StateFlow<Int> = _daysToPlan.asStateFlow()
     
-    private val _avoidRepeats = MutableStateFlow(true)
+    private val _avoidRepeats = MutableStateFlow(false)
     val avoidRepeats: StateFlow<Boolean> = _avoidRepeats.asStateFlow()
     
     fun setDaysToPlan(days: Int) {

@@ -32,20 +32,8 @@ fun SettingsScreen(
             text = stringResource(R.string.settings),
             style = MaterialTheme.typography.headlineMedium
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         
-        Text("Days to plan: $daysToPlan")
-        Spacer(modifier = Modifier.height(8.dp))
-        Slider(
-            value = daysToPlan.toFloat(),
-            onValueChange = { newValue ->
-                viewModel.setDaysToPlan(newValue.roundToInt())
-            },
-            valueRange = 1f..7f,
-            steps = 6
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Switch(
                 checked = avoidRepeats,
@@ -55,9 +43,27 @@ fun SettingsScreen(
             Text(stringResource(R.string.no_repeat))
         }
         
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { navController.popBackStack() }) {
-            Text("Back")
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // History section
+        Text(
+            text = "歷史記錄",
+            style = MaterialTheme.typography.headlineSmall
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Button(
+            onClick = { navController.navigate("history") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("查看歷史記錄")
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = { navController.popBackStack() },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("返回")
         }
     }
 }

@@ -58,22 +58,11 @@ fun HomeScreen(
                     }) {
                         Icon(Icons.Filled.Casino, contentDescription = "隨機選擇餸菜")
                     }
-                    IconButton(onClick = { navController.navigate("history") }) {
-                        Icon(Icons.Filled.History, contentDescription = "歷史記錄")
-                    }
                     IconButton(onClick = { navController.navigate("settings") }) {
                         Icon(Icons.Filled.Settings, contentDescription = "設定")
                     }
                     IconButton(onClick = { navController.navigate("search") }) {
                         Icon(Icons.Filled.Search, contentDescription = "搜尋")
-                    }
-                    IconButton(onClick = {
-                        viewModel.preloadSampleMeals()
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("已載入30款樣本餸菜")
-                        }
-                    }) {
-                        Icon(Icons.Filled.Download, contentDescription = "載入樣本餸菜")
                     }
                 }
             }
@@ -86,7 +75,7 @@ fun HomeScreen(
         ) {
             // Header
             Text(
-                text = stringResource(R.string.app_name),
+                text = "🍽️ ${stringResource(R.string.app_name)} 🍜",
                 style = MaterialTheme.typography.displaySmall,
                 modifier = Modifier
                     .fillMaxWidth()
