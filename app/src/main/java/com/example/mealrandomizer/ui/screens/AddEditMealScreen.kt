@@ -9,7 +9,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.mealrandomizer.R
-import com.example.mealrandomizer.data.Difficulty
 import com.example.mealrandomizer.viewmodel.AddEditMealViewModel
 
 @Composable
@@ -22,12 +21,6 @@ fun AddEditMealScreen(
     val difficulty by viewModel.difficulty.collectAsState()
     val cookingTime by viewModel.cookingTime.collectAsState()
     val calories by viewModel.calories.collectAsState()
-
-    val difficultyText = when (difficulty) {
-        Difficulty.EASY -> stringResource(R.string.easy)
-        Difficulty.MEDIUM -> stringResource(R.string.medium)
-        Difficulty.HARD -> stringResource(R.string.hard)
-    }
 
     Column(
         modifier = Modifier
@@ -53,42 +46,12 @@ fun AddEditMealScreen(
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
-        // Difficulty dropdown
-        var expanded by remember { mutableStateOf(false) }
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
-        ) {
-            OutlinedTextField(
-                value = difficultyText,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(stringResource(R.string.difficulty)) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor()
-            )
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                Difficulty.values().forEach { diff ->
-                    val diffText = when (diff) {
-                        Difficulty.EASY -> stringResource(R.string.easy)
-                        Difficulty.MEDIUM -> stringResource(R.string.medium)
-                        Difficulty.HARD -> stringResource(R.string.hard)
-                    }
-                    DropdownMenuItem(
-                        text = { Text(diffText) },
-                        onClick = {
-                            viewModel.updateDifficulty(diff)
-                            expanded = false
-                        }
-                    )
-                }
-            }
-        }
+        OutlinedTextField(
+            value = difficulty,
+            onValueChange = { viewModel.updateDifficulty(it) },
+            label = { Text(stringResource(R.string.difficulty)) },
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = cookingTime,
