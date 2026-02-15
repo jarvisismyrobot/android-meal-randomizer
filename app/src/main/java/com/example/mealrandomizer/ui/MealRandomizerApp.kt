@@ -22,7 +22,6 @@ fun MealRandomizerApp() {
             arguments = listOf(navArgument("mealId") { 
                 type = NavType.LongType 
                 defaultValue = -1L
-                nullable = true 
             })
         ) { backStackEntry ->
             val mealId = backStackEntry.arguments?.getLong("mealId") ?: -1L
