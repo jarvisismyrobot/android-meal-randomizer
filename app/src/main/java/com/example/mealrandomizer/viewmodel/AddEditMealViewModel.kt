@@ -109,7 +109,11 @@ class AddEditMealViewModel @Inject constructor(
             if (currentMealId > 0) {
                 repository.updateMeal(meal)
             } else {
-                repository.insertMeal(meal)
+                val insertedId = repository.insertMeal(meal)
+                if (insertedId == -1L) {
+                    _saveError.value = "餸菜名稱已存在，請使用其他名稱"
+                    return false
+                }
             }
         } catch (e: android.database.sqlite.SQLiteConstraintException) {
             _saveError.value = "餸菜名稱已存在，請使用其他名稱"

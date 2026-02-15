@@ -11,7 +11,7 @@ interface MealDao {
     @Query("SELECT * FROM meals WHERE id = :id")
     suspend fun getById(id: Long): Meal?
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(meal: Meal): Long
 
     @Update
