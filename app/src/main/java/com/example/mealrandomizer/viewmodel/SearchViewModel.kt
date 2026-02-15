@@ -1,6 +1,6 @@
-package com.example.mealrandomizer.viewmodel
-
 @file:OptIn(kotlinx.coroutines.FlowPreview::class, kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
+package com.example.mealrandomizer.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

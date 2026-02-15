@@ -1,6 +1,6 @@
-package com.example.mealrandomizer.data
-
 @file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
+package com.example.mealrandomizer.data
 
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
