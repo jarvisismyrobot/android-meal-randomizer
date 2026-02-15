@@ -10,7 +10,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.mealrandomizer.R
 import com.example.mealrandomizer.data.Difficulty
-import com.example.mealrandomizer.data.Meal
 import com.example.mealrandomizer.viewmodel.AddEditMealViewModel
 
 @Composable
@@ -23,6 +22,12 @@ fun AddEditMealScreen(
     val difficulty by viewModel.difficulty.collectAsState()
     val cookingTime by viewModel.cookingTime.collectAsState()
     val calories by viewModel.calories.collectAsState()
+
+    val difficultyText = when (difficulty) {
+        Difficulty.EASY -> stringResource(R.string.easy)
+        Difficulty.MEDIUM -> stringResource(R.string.medium)
+        Difficulty.HARD -> stringResource(R.string.hard)
+    }
 
     Column(
         modifier = Modifier
@@ -55,7 +60,7 @@ fun AddEditMealScreen(
             onExpandedChange = { expanded = !expanded }
         ) {
             OutlinedTextField(
-                value = difficulty.localized(),
+                value = difficultyText,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text(stringResource(R.string.difficulty)) },
@@ -69,8 +74,13 @@ fun AddEditMealScreen(
                 onDismissRequest = { expanded = false }
             ) {
                 Difficulty.values().forEach { diff ->
+                    val diffText = when (diff) {
+                        Difficulty.EASY -> stringResource(R.string.easy)
+                        Difficulty.MEDIUM -> stringResource(R.string.medium)
+                        Difficulty.HARD -> stringResource(R.string.hard)
+                    }
                     DropdownMenuItem(
-                        text = { Text(diff.localized()) },
+                        text = { Text(diffText) },
                         onClick = {
                             viewModel.updateDifficulty(diff)
                             expanded = false
@@ -114,10 +124,4 @@ fun AddEditMealScreen(
             }
         }
     }
-}
-
-private fun Difficulty.localized(): String = when (this) {
-    Difficulty.EASY -> stringResource(R.string.easy)
-    Difficulty.MEDIUM -> stringResource(R.string.medium)
-    Difficulty.HARD -> stringResource(R.string.hard)
 }
