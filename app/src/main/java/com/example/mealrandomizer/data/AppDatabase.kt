@@ -42,6 +42,10 @@ abstract class AppDatabase : RoomDatabase() {
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
+                // Ensure database is populated on first open
+                scope.launch(Dispatchers.IO) {
+                    populateDatabase(instance.mealDao())
+                }
                 instance
             }
         }
