@@ -2,6 +2,8 @@ package com.example.mealrandomizer.di
 
 import android.content.Context
 import com.example.mealrandomizer.data.AppDatabase
+import com.example.mealrandomizer.data.MealPlanDao
+import com.example.mealrandomizer.data.MealPlanRepository
 import com.example.mealrandomizer.data.MealRepository
 import dagger.Module
 import dagger.Provides
@@ -37,4 +39,13 @@ object AppModule {
     @Singleton
     fun provideMealRepository(mealDao: com.example.mealrandomizer.data.MealDao) =
         MealRepository(mealDao)
+
+    @Provides
+    @Singleton
+    fun provideMealPlanDao(db: AppDatabase) = db.mealPlanDao()
+
+    @Provides
+    @Singleton
+    fun provideMealPlanRepository(mealPlanDao: MealPlanDao) =
+        MealPlanRepository(mealPlanDao)
 }
