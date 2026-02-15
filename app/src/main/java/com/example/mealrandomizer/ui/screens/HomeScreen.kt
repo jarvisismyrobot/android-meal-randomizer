@@ -1,6 +1,10 @@
 package com.example.mealrandomizer.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,8 +15,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.mealrandomizer.R
 import com.example.mealrandomizer.data.Meal
+import com.example.mealrandomizer.data.MealPlan
 import com.example.mealrandomizer.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun HomeScreen(
@@ -21,86 +28,172 @@ fun HomeScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    var showRandomMealDialog by remember { mutableStateOf(false) }
-    var randomMeal by remember { mutableStateOf<Meal?>(null) }
+    val currentMealPlan by viewModel.currentMealPlan.collectAsState()
+    
+    // Auto-generate meal plan on first launch if none exists
+    LaunchedEffect(Unit) {
+        if (currentMealPlan == null) {
+            viewModel.generateMealPlanAsync { plan ->
+                // Plan generated, state will update via flow
+            }
+        }
+    }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            BottomAppBar {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    IconButton(onClick = { navController.navigate("addEdit") }) {
+                        Icon(Icons.Filled.Add, contentDescription = "加餸")
+                    }
+                    IconButton(onClick = {
+                        viewModel.generateMealPlanAsync { plan ->
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("已生成7日餐單")
+                            }
+                        }
+                    }) {
+                        Icon(Icons.Filled.Casino, contentDescription = "隨機選擇餸菜")
+                    }
+                    IconButton(onClick = { navController.navigate("history") }) {
+                        Icon(Icons.Filled.History, contentDescription = "歷史記錄")
+                    }
+                    IconButton(onClick = { navController.navigate("settings") }) {
+                        Icon(Icons.Filled.Settings, contentDescription = "設定")
+                    }
+                    IconButton(onClick = { navController.navigate("search") }) {
+                        Icon(Icons.Filled.Search, contentDescription = "搜尋")
+                    }
+                    IconButton(onClick = {
+                        viewModel.preloadSampleMeals()
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("已載入30款樣本餸菜")
+                        }
+                    }) {
+                        Icon(Icons.Filled.Download, contentDescription = "載入樣本餸菜")
+                    }
+                }
+            }
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
         ) {
+            // Header
             Text(
                 text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.headlineLarge
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(32.dp))
-            Button(onClick = { navController.navigate("addEdit") }) {
-                Text(stringResource(R.string.add_meal))
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = {
-                viewModel.generateRandomMeal { meal ->
-                    randomMeal = meal
-                    showRandomMealDialog = true
+            
+            // Meal plan display
+            if (currentMealPlan == null) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
-            }) {
-                Text(stringResource(R.string.generate_meal))
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { navController.navigate("history") }) {
-                Text(stringResource(R.string.history))
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { navController.navigate("settings") }) {
-                Text(stringResource(R.string.settings))
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { navController.navigate("search") }) {
-                Text(stringResource(R.string.search))
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = {
-                viewModel.preloadSampleMeals()
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar("已載入30款樣本餸菜")
-                }
-            }) {
-                Text(stringResource(R.string.preload_sample_meals))
+            } else {
+                MealPlanDisplay(
+                    mealPlan = currentMealPlan!!,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                )
             }
         }
     }
+}
 
-    // Dialog to show random meal result
-    if (showRandomMealDialog) {
-        AlertDialog(
-            onDismissRequest = { showRandomMealDialog = false },
-            title = { Text(text = stringResource(R.string.meal_generated)) },
-            text = {
-                if (randomMeal != null) {
-                    Column {
-                        Text(text = "名稱: ${randomMeal!!.name}")
-                        Text(text = "描述: ${randomMeal!!.description}")
-                        Text(text = "難度: ${randomMeal!!.difficulty}")
-                        Text(text = "烹調時間: ${randomMeal!!.cookingTimeMinutes} 分鐘")
-                        randomMeal!!.calories?.let {
-                            Text(text = "卡路里: $it kcal")
-                        }
-                    }
-                } else {
-                    Text(text = "暫無餸菜，請先添加或載入樣本")
-                }
-            },
-            confirmButton = {
-                Button(onClick = { showRandomMealDialog = false }) {
-                    Text("確定")
+@Composable
+fun MealPlanDisplay(
+    mealPlan: MealPlan,
+    modifier: Modifier = Modifier
+) {
+    // For now, show a placeholder since we don't have the full meal plan with entries
+    // In a real implementation, you would fetch MealPlanWithEntries
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "7日餐單",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                    Text(
+                        text = "已為你生成未來${mealPlan.days}日的餐單",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "避免重複: ${if (mealPlan.avoidRepeats) "是" else "否"}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
-        )
+        }
+        
+        // Placeholder for days
+        items(mealPlan.days) { dayIndex ->
+            DayCard(dayIndex = dayIndex + 1)
+        }
+    }
+}
+
+@Composable
+fun DayCard(dayIndex: Int) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "第 $dayIndex 日",
+                style = MaterialTheme.typography.titleLarge
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Breakfast
+            Text(
+                text = "早餐",
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text("隨機選擇3款早餐菜式")
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Lunch
+            Text(
+                text = "午餐", 
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text("隨機選擇3款午餐菜式")
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Dinner
+            Text(
+                text = "晚餐",
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text("隨機選擇3款晚餐菜式")
+        }
     }
 }

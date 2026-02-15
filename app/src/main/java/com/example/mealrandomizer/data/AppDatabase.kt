@@ -10,10 +10,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Meal::class], version = 1, exportSchema = false)
+@Database(
+    entities = [Meal::class, MealPlan::class, MealPlanEntry::class],
+    version = 2,
+    exportSchema = false
+)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun mealDao(): MealDao
+    abstract fun mealPlanDao(): MealPlanDao
 
     private class MealDatabaseCallback(
         private val scope: CoroutineScope

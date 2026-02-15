@@ -22,6 +22,9 @@ interface MealDao {
 
     @Query("SELECT * FROM meals WHERE categories LIKE '%' || :category || '%'")
     fun getByCategory(category: Category): Flow<List<Meal>>
+    
+    @Query("SELECT * FROM meals WHERE categories LIKE '%' || :category || '%'")
+    suspend fun getByCategoryList(category: Category): List<Meal>
 
     @Query("SELECT * FROM meals WHERE name LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%'")
     fun search(query: String): Flow<List<Meal>>
