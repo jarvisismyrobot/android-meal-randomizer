@@ -48,7 +48,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         suspend fun populateDatabase(mealDao: MealDao) {
             // Only populate if database is empty
-            if (mealDao.getAll().firstOrNull() == null) {
+            if (mealDao.getAny() == null) {
                 sampleMeals.forEach { mealDao.insert(it) }
             }
         }

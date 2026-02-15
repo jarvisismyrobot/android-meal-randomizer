@@ -31,4 +31,7 @@ interface MealDao {
 
     @Query("SELECT * FROM meals WHERE id NOT IN (:excludedIds) ORDER BY RANDOM() LIMIT 1")
     suspend fun getRandomExcluding(excludedIds: List<Long>): Meal?
+
+    @Query("SELECT * FROM meals LIMIT 1")
+    suspend fun getAny(): Meal?
 }

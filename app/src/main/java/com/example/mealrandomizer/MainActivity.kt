@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.example.mealrandomizer.ui.MealRandomizerApp
 import com.example.mealrandomizer.ui.theme.MealRandomizerTheme
 
 class MainActivity : ComponentActivity() {

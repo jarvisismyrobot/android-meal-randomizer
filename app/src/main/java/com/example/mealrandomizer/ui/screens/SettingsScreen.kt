@@ -3,6 +3,7 @@ package com.example.mealrandomizer.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -26,11 +27,14 @@ fun SettingsScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(8.dp))
         Slider(value = 7f, onValueChange = {}, valueRange = 1f..7f, steps = 6)
         Spacer(modifier = Modifier.height(16.dp))
-        Switch(
-            checked = true,
-            onCheckedChange = {},
-            text = { Text(stringResource(R.string.no_repeat)) }
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Switch(
+                checked = true,
+                onCheckedChange = {}
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(stringResource(R.string.no_repeat))
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = { navController.popBackStack() }) {
             Text("Back")
