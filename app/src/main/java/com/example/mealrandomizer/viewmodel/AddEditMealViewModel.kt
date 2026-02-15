@@ -32,6 +32,27 @@ class AddEditMealViewModel @Inject constructor(
     val lunchSelected: StateFlow<Boolean> = _lunchSelected
     private val _dinnerSelected = MutableStateFlow(true)
     val dinnerSelected: StateFlow<Boolean> = _dinnerSelected
+    
+    private var currentMealId: Long = -1L
+
+    fun loadMeal(mealId: Long) {
+        if (mealId <= 0) return
+        currentMealId = mealId
+        viewModelScope.launch {
+            val meal = repository.getMealById(mealId)
+            meal?.let {
+                _name.value = it.name
+                _description.value = it.description
+                _cookingTime.value = it.cookingTimeMinutes.toString()
+                _calories.value = it.calories?.toString() ?: ""
+                
+                // Set meal time checkboxes based on categories
+                _breakfastSelected.value = it.categories.contains(Category.BREAKFAST)
+                _lunchSelected.value = it.categories.contains(Category.LUNCH)
+                _dinnerSelected.value = it.categories.contains(Category.DINNER)
+            }
+        }
+    }
 
     fun updateName(value: String) { _name.value = value }
     fun updateDescription(value: String) { _description.value = value }
@@ -58,6 +79,7 @@ class AddEditMealViewModel @Inject constructor(
             }
             
             val meal = Meal(
+                id = if (currentMealId > 0) currentMealId else 0,
                 name = _name.value,
                 description = _description.value,
                 difficulty = Difficulty.MEDIUM, // Default difficulty since field is required
@@ -65,7 +87,12 @@ class AddEditMealViewModel @Inject constructor(
                 calories = caloriesInt,
                 categories = categories
             )
-            repository.insertMeal(meal)
+            
+            if (currentMealId > 0) {
+                repository.updateMeal(meal)
+            } else {
+                repository.insertMeal(meal)
+            }
         }
     }
 }

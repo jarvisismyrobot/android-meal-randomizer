@@ -46,7 +46,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    IconButton(onClick = { navController.navigate("addEdit") }) {
+                    IconButton(onClick = { navController.navigate("addEdit/-1") }) {
                         Icon(Icons.Filled.Add, contentDescription = "加餸")
                     }
                     IconButton(onClick = {
@@ -87,11 +87,12 @@ fun HomeScreen(
             // Header
             Text(
                 text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.displaySmall,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                color = MaterialTheme.colorScheme.primary
             )
             
             // Meal plan display
@@ -201,7 +202,7 @@ fun DayCard(
         ) {
             Text(
                 text = "第 $dayIndex 日",
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -209,15 +210,15 @@ fun DayCard(
             // Breakfast section
             Text(
                 text = "早餐",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.secondary
             )
             Spacer(modifier = Modifier.height(4.dp))
             if (breakfastMeals.isEmpty()) {
-                Text("隨機選擇3款早餐菜式", style = MaterialTheme.typography.bodyMedium)
+                Text("隨機選擇3款早餐菜式", style = MaterialTheme.typography.titleMedium)
             } else {
                 breakfastMeals.forEachIndexed { index, meal ->
-                    Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.bodyMedium)
+                    Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.titleMedium)
                 }
             }
             
@@ -226,15 +227,15 @@ fun DayCard(
             // Lunch section
             Text(
                 text = "午餐",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.secondary
             )
             Spacer(modifier = Modifier.height(4.dp))
             if (lunchMeals.isEmpty()) {
-                Text("隨機選擇3款午餐菜式", style = MaterialTheme.typography.bodyMedium)
+                Text("隨機選擇3款午餐菜式", style = MaterialTheme.typography.titleMedium)
             } else {
                 lunchMeals.forEachIndexed { index, meal ->
-                    Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.bodyMedium)
+                    Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.titleMedium)
                 }
             }
             
@@ -243,15 +244,15 @@ fun DayCard(
             // Dinner section
             Text(
                 text = "晚餐",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.secondary
             )
             Spacer(modifier = Modifier.height(4.dp))
             if (dinnerMeals.isEmpty()) {
-                Text("隨機選擇3款晚餐菜式", style = MaterialTheme.typography.bodyMedium)
+                Text("隨機選擇3款晚餐菜式", style = MaterialTheme.typography.titleMedium)
             } else {
                 dinnerMeals.forEachIndexed { index, meal ->
-                    Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.bodyMedium)
+                    Text("${index + 1}. ${meal.name}", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }

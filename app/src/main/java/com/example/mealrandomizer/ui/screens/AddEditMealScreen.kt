@@ -16,6 +16,7 @@ import com.example.mealrandomizer.viewmodel.AddEditMealViewModel
 @Composable
 fun AddEditMealScreen(
     navController: NavController,
+    mealId: Long = -1L,
     viewModel: AddEditMealViewModel = hiltViewModel()
 ) {
     val name by viewModel.name.collectAsState()
@@ -25,6 +26,12 @@ fun AddEditMealScreen(
     val breakfastSelected by viewModel.breakfastSelected.collectAsState()
     val lunchSelected by viewModel.lunchSelected.collectAsState()
     val dinnerSelected by viewModel.dinnerSelected.collectAsState()
+    
+    LaunchedEffect(mealId) {
+        if (mealId > 0) {
+            viewModel.loadMeal(mealId)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -32,7 +39,7 @@ fun AddEditMealScreen(
             .padding(16.dp)
     ) {
         Text(
-            text = stringResource(R.string.add_edit_meal_title),
+            text = if (mealId > 0) "編輯餸菜" else "新增餸菜",
             style = MaterialTheme.typography.headlineMedium
         )
         Spacer(modifier = Modifier.height(16.dp))

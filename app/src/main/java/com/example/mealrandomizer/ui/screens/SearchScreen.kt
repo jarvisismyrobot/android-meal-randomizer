@@ -66,8 +66,10 @@ fun SearchScreen(
                 items(searchResults) { meal ->
                     MealItemCard(
                         meal = meal,
-                        onClick = {
-                            // Show meal details or edit (for now just show delete confirmation)
+                        onEdit = {
+                            navController.navigate("addEdit/${meal.id}")
+                        },
+                        onDelete = {
                             mealToDelete = meal
                         }
                     )
@@ -114,12 +116,11 @@ fun SearchScreen(
 @Composable
 fun MealItemCard(
     meal: Meal,
-    onClick: () -> Unit
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -131,15 +132,27 @@ fun MealItemCard(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
-                IconButton(
-                    onClick = onClick,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "刪除",
-                        tint = MaterialTheme.colorScheme.error
-                    )
+                Row {
+                    IconButton(
+                        onClick = onEdit,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "編輯",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "刪除",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -165,6 +178,18 @@ fun MealItemCard(
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
+            }
+            // Show meal times
+            Spacer(modifier = Modifier.height(4.dp))
+            val mealTimes = mutableListOf<String>()
+            if (meal.categories.contains(Category.BREAKFAST)) mealTimes.add("早餐")
+            if (meal.categories.contains(Category.LUNCH)) mealTimes.add("午餐")
+            if (meal.categories.contains(Category.DINNER)) mealTimes.add("晚餐")
+            if (mealTimes.isNotEmpty()) {
+                Text(
+                    text = "適用時段: ${mealTimes.joinToString(", ")}",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }
