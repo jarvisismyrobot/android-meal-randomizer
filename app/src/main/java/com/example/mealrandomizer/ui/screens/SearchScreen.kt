@@ -33,7 +33,6 @@ fun SearchScreen(
     val filterDinner by viewModel.filterDinner.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     var mealToDelete by remember { mutableStateOf<Meal?>(null) }
-    var backButtonEnabled by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
@@ -118,14 +117,8 @@ fun SearchScreen(
         }
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = {
-                if (backButtonEnabled) {
-                    backButtonEnabled = false
-                    navController.popBackStack()
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = backButtonEnabled
+            onClick = { navController.popBackStack() },
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text("返回")
         }

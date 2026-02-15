@@ -26,8 +26,6 @@ fun AddEditMealScreen(
     val breakfastSelected by viewModel.breakfastSelected.collectAsState()
     val lunchSelected by viewModel.lunchSelected.collectAsState()
     val dinnerSelected by viewModel.dinnerSelected.collectAsState()
-    var cancelButtonEnabled by remember { mutableStateOf(true) }
-    var saveButtonEnabled by remember { mutableStateOf(true) }
     
     LaunchedEffect(mealId) {
         if (mealId > 0) {
@@ -110,27 +108,17 @@ fun AddEditMealScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Button(
-                onClick = {
-                    if (cancelButtonEnabled) {
-                        cancelButtonEnabled = false
-                        navController.popBackStack()
-                    }
-                },
-                modifier = Modifier.weight(1f),
-                enabled = cancelButtonEnabled
+                onClick = { navController.popBackStack() },
+                modifier = Modifier.weight(1f)
             ) {
                 Text(stringResource(R.string.cancel))
             }
             Button(
                 onClick = {
-                    if (saveButtonEnabled) {
-                        saveButtonEnabled = false
-                        viewModel.saveMeal()
-                        navController.popBackStack()
-                    }
+                    viewModel.saveMeal()
+                    navController.popBackStack()
                 },
-                modifier = Modifier.weight(1f),
-                enabled = saveButtonEnabled
+                modifier = Modifier.weight(1f)
             ) {
                 Text(stringResource(R.string.save))
             }

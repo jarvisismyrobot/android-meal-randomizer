@@ -24,7 +24,6 @@ fun SettingsScreen(
 ) {
     val daysToPlan by viewModel.daysToPlan.collectAsState()
     val avoidRepeats by viewModel.avoidRepeats.collectAsState()
-    var backButtonEnabled by remember { mutableStateOf(true) }
     
     Column(
         modifier = Modifier
@@ -63,14 +62,8 @@ fun SettingsScreen(
         
         Spacer(modifier = Modifier.height(24.dp))
         Button(
-            onClick = {
-                if (backButtonEnabled) {
-                    backButtonEnabled = false
-                    navController.popBackStack()
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = backButtonEnabled
+            onClick = { navController.popBackStack() },
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text("返回")
         }
