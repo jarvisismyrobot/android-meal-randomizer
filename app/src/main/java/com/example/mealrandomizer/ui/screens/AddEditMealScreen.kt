@@ -87,21 +87,21 @@ fun AddEditMealScreen(
                     checked = breakfastSelected,
                     onCheckedChange = { viewModel.updateBreakfastSelected(it) }
                 )
-                Text("早餐", modifier = Modifier.padding(start = 4.dp))
+                Text("🌅 早餐", modifier = Modifier.padding(start = 4.dp))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = lunchSelected,
                     onCheckedChange = { viewModel.updateLunchSelected(it) }
                 )
-                Text("午餐", modifier = Modifier.padding(start = 4.dp))
+                Text("☀️ 午餐", modifier = Modifier.padding(start = 4.dp))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = dinnerSelected,
                     onCheckedChange = { viewModel.updateDinnerSelected(it) }
                 )
-                Text("晚餐", modifier = Modifier.padding(start = 4.dp))
+                Text("🌙 晚餐", modifier = Modifier.padding(start = 4.dp))
             }
         }
         Spacer(modifier = Modifier.height(8.dp))

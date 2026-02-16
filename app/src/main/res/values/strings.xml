@@ -3,7 +3,7 @@
     <string name="breakfast">早餐</string>
     <string name="lunch">午餐</string>
     <string name="dinner">晚餐</string>
-    <string name="add_meal">加餸</string>
+    <string name="add_meal">加菜</string>
     <string name="edit_meal">編輯</string>
     <string name="delete_meal">刪除</string>
     <string name="meal_name">菜式名稱</string>

@@ -1,46 +1,9 @@
 {
-  "trigger_time": "2026-02-16T14:01:19.208710",
+  "trigger_time": "2026-02-16T14:26:49.249009",
   "repository": "/home/admin/.openclaw/workspace/android-meal-randomizer",
   "branch": "master",
-  "commit_message": "Automated build by Android Build Workflow",
-  "changes": [
-    {
-      "status": "??",
-      "file": ".build-monitor-state"
-    },
-    {
-      "status": "??",
-      "file": ".last_build_report"
-    },
-    {
-      "status": "??",
-      "file": "android-build-state.json"
-    },
-    {
-      "status": "??",
-      "file": "app/src/main/java/com/example/mealrandomizer/ui/screens/SearchScreen.kt.backup"
-    },
-    {
-      "status": "??",
-      "file": "app/src/main/java/com/example/mealrandomizer/ui/screens/SearchScreen.kt.bak2"
-    },
-    {
-      "status": "??",
-      "file": "build-trigger.json"
-    },
-    {
-      "status": "??",
-      "file": "last_monitor_report.txt"
-    },
-    {
-      "status": "??",
-      "file": "latest-build-report.txt"
-    },
-    {
-      "status": "??",
-      "file": "monitor_state.json"
-    }
-  ],
+  "commit_message": "Automated build trigger",
+  "changes": [],
   "workflow_run": null,
   "dry_run": true
 }

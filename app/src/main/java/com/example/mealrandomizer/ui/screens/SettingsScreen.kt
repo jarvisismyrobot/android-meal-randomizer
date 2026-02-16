@@ -30,6 +30,9 @@ import com.example.mealrandomizer.viewmodel.SettingsViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileWriter
+import androidx.core.content.FileProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,13 +133,46 @@ fun SettingsScreen(
                                 val mealType = object : TypeToken<List<Meal>>() {}.type
                                 val json = gson.toJson(meals, mealType)
                                 
-                                val shareIntent = Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    type = "application/json"
-                                    putExtra(Intent.EXTRA_TEXT, json)
-                                    putExtra(Intent.EXTRA_SUBJECT, "菜式備份")
+                                try {
+                                    // Create a file in app's cache directory
+                                    val fileName = "菜式備份_${System.currentTimeMillis()}.json"
+                                    val cacheDir = context.cacheDir
+                                    val exportFile = File(cacheDir, fileName)
+                                    
+                                    // Write JSON to file
+                                    FileWriter(exportFile).use { writer ->
+                                        writer.write(json)
+                                    }
+                                    
+                                    // Get URI using FileProvider
+                                    val fileUri = androidx.core.content.FileProvider.getUriForFile(
+                                        context,
+                                        "${context.packageName}.fileprovider",
+                                        exportFile
+                                    )
+                                    
+                                    // Create intent to share the file
+                                    val shareIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        type = "application/json"
+                                        putExtra(Intent.EXTRA_STREAM, fileUri)
+                                        putExtra(Intent.EXTRA_SUBJECT, "菜式備份")
+                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    }
+                                    
+                                    // Launch chooser
+                                    context.startActivity(Intent.createChooser(shareIntent, "匯出菜式檔案"))
+                                } catch (e: Exception) {
+                                    // Fallback to text sharing if file export fails
+                                    val shareIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        type = "application/json"
+                                        putExtra(Intent.EXTRA_TEXT, json)
+                                        putExtra(Intent.EXTRA_SUBJECT, "菜式備份")
+                                    }
+                                    context.startActivity(Intent.createChooser(shareIntent, "分享菜式備份"))
+                                    Toast.makeText(context, "檔案匯出失敗，已改用文字分享", Toast.LENGTH_SHORT).show()
                                 }
-                                context.startActivity(Intent.createChooser(shareIntent, "分享菜式備份"))
                                 exportInProgress = false
                             }
                         }

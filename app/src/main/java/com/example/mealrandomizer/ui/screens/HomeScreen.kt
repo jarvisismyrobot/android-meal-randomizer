@@ -72,17 +72,9 @@ fun HomeScreen(
                         selected = false,
                         onClick = { navController.navigate("addEdit/-1") },
                         icon = {
-                            BadgedBox(
-                                badge = {
-                                    Badge {
-                                        Text("+", fontSize = 10.sp)
-                                    }
-                                }
-                            ) {
-                                Icon(Icons.Filled.Add, contentDescription = "加餸")
-                            }
+                            Icon(Icons.Filled.Add, contentDescription = "加菜")
                         },
-                        label = { Text("加餸", style = MaterialTheme.typography.labelSmall) }
+                        label = { Text("加菜", style = MaterialTheme.typography.labelSmall) }
                     )
                     NavigationBarItem(
                         selected = false,
