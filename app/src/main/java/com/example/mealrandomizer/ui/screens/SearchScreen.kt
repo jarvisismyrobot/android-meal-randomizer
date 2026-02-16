@@ -474,6 +474,8 @@ fun CategoryChip(text: String, color: Color) {
         )
     }
 }
+
+@Composable
 fun MealItemCard(
     meal: Meal,
     onEdit: () -> Unit,
