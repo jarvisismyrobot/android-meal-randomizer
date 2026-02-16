@@ -220,7 +220,6 @@ fun SettingsItem(
             .clickable(
                 enabled = isClickable,
                 interactionSource = interactionSource,
-                indication = LocalIndication.current,
                 onClick = { onClick?.invoke() }
             ),
         headlineContent = {
