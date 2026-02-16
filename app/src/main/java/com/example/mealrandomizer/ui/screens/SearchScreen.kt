@@ -474,8 +474,6 @@ fun CategoryChip(text: String, color: Color) {
         )
     }
 }
-            }
-            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 Checkbox(
                     checked = filterDinner,
                     onCheckedChange = { viewModel.setFilterDinner(it) }
