@@ -1,9 +1,19 @@
 {
-  "trigger_time": "2026-02-16T14:26:49.249009",
+  "trigger_time": "2026-02-16T15:17:35.032341",
   "repository": "/home/admin/.openclaw/workspace/android-meal-randomizer",
   "branch": "master",
-  "commit_message": "Automated build trigger",
-  "changes": [],
-  "workflow_run": null,
-  "dry_run": true
+  "commit_message": "Test android-build-workflow",
+  "changes": [
+    {
+      "status": "M",
+      "file": "EADME.md"
+    }
+  ],
+  "workflow_run": {
+    "createdAt": "2026-02-16T07:17:32Z",
+    "databaseId": 22053573868,
+    "name": "Build APK",
+    "status": "in_progress"
+  },
+  "dry_run": false
 }

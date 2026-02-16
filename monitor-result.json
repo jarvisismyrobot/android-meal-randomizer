@@ -1,0 +1,32 @@
+{
+  "run_id": "22053573868",
+  "start_time": "2026-02-16T15:17:53.047208",
+  "max_checks": 2,
+  "interval_seconds": 10,
+  "checks": [
+    {
+      "check_number": 1,
+      "timestamp": "2026-02-16T15:17:53.133256",
+      "status_data": {
+        "error": "UNKNOWN_ERROR",
+        "message": "Unknown JSON field: \"htmlUrl\"\nAvailable fields:\n  attempt\n  conclusion\n  createdAt\n  databaseId\n  displayTitle\n  event\n  headBranch\n  headSha\n  jobs\n  name\n  number\n  startedAt\n  status\n  updatedAt\n  url\n  workflowDatabaseId\n  workflowName"
+      }
+    },
+    {
+      "check_number": 2,
+      "timestamp": "2026-02-16T15:18:03.214058",
+      "status_data": {
+        "error": "UNKNOWN_ERROR",
+        "message": "Unknown JSON field: \"htmlUrl\"\nAvailable fields:\n  attempt\n  conclusion\n  createdAt\n  databaseId\n  displayTitle\n  event\n  headBranch\n  headSha\n  jobs\n  name\n  number\n  startedAt\n  status\n  updatedAt\n  url\n  workflowDatabaseId\n  workflowName"
+      }
+    }
+  ],
+  "final_result": {
+    "status": "timeout",
+    "conclusion": "timeout",
+    "completed_at": "2026-02-16T15:19:05.132548",
+    "total_checks": 2,
+    "total_time": "0:00:00.000096"
+  },
+  "current_check": 2
+}
