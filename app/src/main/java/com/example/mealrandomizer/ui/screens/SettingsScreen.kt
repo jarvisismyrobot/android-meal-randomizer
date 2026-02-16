@@ -2,8 +2,12 @@ package com.example.mealrandomizer.ui.screens
 
 import android.content.Intent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,7 +26,6 @@ import com.example.mealrandomizer.data.Meal
 import com.example.mealrandomizer.viewmodel.SettingsViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
 @Composable
@@ -31,92 +34,216 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val avoidRepeats by viewModel.avoidRepeats.collectAsState()
-    var backButtonEnabled by remember { mutableStateOf(true) }
     var exportInProgress by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = stringResource(R.string.settings),
-            style = MaterialTheme.typography.headlineMedium
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Switch(
-                checked = avoidRepeats,
-                onCheckedChange = { viewModel.setAvoidRepeats(it) }
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(stringResource(R.string.no_repeat))
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // History section
-        Text(
-            text = "歷史記錄",
-            style = MaterialTheme.typography.headlineSmall
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Button(
-            onClick = { navController.navigate("history") },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("查看歷史記錄")
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // 匯出按鈕
-        Button(
-            onClick = {
-                if (!exportInProgress) {
-                    exportInProgress = true
-                    coroutineScope.launch {
-                        val meals = viewModel.getMealsForExport()
-                        val gson = Gson()
-                        val mealType = object : TypeToken<List<Meal>>() {}.type
-                        val json = gson.toJson(meals, mealType)
-                        
-                        val shareIntent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            type = "application/json"
-                            putExtra(Intent.EXTRA_TEXT, json)
-                            putExtra(Intent.EXTRA_SUBJECT, "餸菜備份")
-                        }
-                        context.startActivity(Intent.createChooser(shareIntent, "分享餸菜備份"))
-                        exportInProgress = false
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "⚙️ ${stringResource(R.string.settings)}",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+                ),
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "返回"
+                        )
                     }
                 }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !exportInProgress
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (exportInProgress) {
-                CircularProgressIndicator(modifier = Modifier.size(16.dp))
-            } else {
-                Text("匯出餸菜 (JSON)")
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            
+            // Meal settings section
+            item {
+                SettingsCategory(title = "餐單設定")
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Filled.Repeat,
+                    title = "避免重複",
+                    subtitle = "防止同一餸菜在餐單中重複出現",
+                    trailing = {
+                        Switch(
+                            checked = avoidRepeats,
+                            onCheckedChange = { viewModel.setAvoidRepeats(it) },
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                )
+            }
+            
+            item {
+                Divider(modifier = Modifier.padding(horizontal = 16.dp))
+            }
+            
+            // Data management section
+            item {
+                SettingsCategory(title = "數據管理")
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Filled.History,
+                    title = "歷史記錄",
+                    subtitle = "查看過往生成的餐單",
+                    onClick = { navController.navigate("history") }
+                )
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Filled.Download,
+                    title = "匯出餸菜",
+                    subtitle = "備份所有餸菜資料 (JSON格式)",
+                    onClick = {
+                        if (!exportInProgress) {
+                            exportInProgress = true
+                            coroutineScope.launch {
+                                val meals = viewModel.getMealsForExport()
+                                val gson = Gson()
+                                val mealType = object : TypeToken<List<Meal>>() {}.type
+                                val json = gson.toJson(meals, mealType)
+                                
+                                val shareIntent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    type = "application/json"
+                                    putExtra(Intent.EXTRA_TEXT, json)
+                                    putExtra(Intent.EXTRA_SUBJECT, "餸菜備份")
+                                }
+                                context.startActivity(Intent.createChooser(shareIntent, "分享餸菜備份"))
+                                exportInProgress = false
+                            }
+                        }
+                    },
+                    trailing = {
+                        if (exportInProgress) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
+                )
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Filled.Upload,
+                    title = "匯入餸菜",
+                    subtitle = "從JSON文件匯入餸菜資料",
+                    onClick = {
+                        // TODO: Implement import functionality
+                        coroutineScope.launch {
+                            // Placeholder for import
+                        }
+                    }
+                )
+            }
+            
+            item {
+                Divider(modifier = Modifier.padding(horizontal = 16.dp))
+            }
+            
+            // About section
+            item {
+                SettingsCategory(title = "關於")
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Filled.Info,
+                    title = "版本資訊",
+                    subtitle = "Meal Randomizer v2.0.0",
+                    onClick = { /* Show version dialog */ }
+                )
+            }
+            
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(
-            onClick = {
-                if (backButtonEnabled) {
-                    backButtonEnabled = false
-                    navController.popBackStack()
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = backButtonEnabled
-        ) {
-            Text("返回")
-        }
     }
+}
+
+@Composable
+fun SettingsCategory(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        color = MaterialTheme.colorScheme.primary
+    )
+}
+
+@Composable
+fun SettingsItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String? = null,
+    onClick: (() -> Unit)? = null,
+    trailing: @Composable (() -> Unit)? = null
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isClickable = onClick != null
+    
+    ListItem(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+            .clickable(
+                enabled = isClickable,
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                onClick = { onClick?.invoke() }
+            ),
+        headlineContent = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium
+            )
+        },
+        supportingContent = subtitle?.let {
+            {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        leadingContent = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        trailingContent = trailing
+    )
 }
