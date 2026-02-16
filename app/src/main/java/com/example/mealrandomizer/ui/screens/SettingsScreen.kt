@@ -219,7 +219,6 @@ fun SettingsItem(
             .padding(horizontal = 8.dp)
             .clickable(
                 enabled = isClickable,
-                interactionSource = interactionSource,
                 onClick = { onClick?.invoke() }
             ),
         headlineContent = {
