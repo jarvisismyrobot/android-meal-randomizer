@@ -43,7 +43,9 @@ class SettingsViewModel @Inject constructor(
             val mealType = object : TypeToken<List<Meal>>() {}.type
             val meals = gson.fromJson<List<Meal>>(json, mealType)
             if (meals != null) {
-                repository.importMeals(meals)
+                // Reset IDs to 0 so they are inserted as new meals
+                val mealsWithNewIds = meals.map { it.copy(id = 0) }
+                repository.importMeals(mealsWithNewIds)
                 true
             } else {
                 false
