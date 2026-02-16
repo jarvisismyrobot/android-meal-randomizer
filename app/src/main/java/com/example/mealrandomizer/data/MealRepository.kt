@@ -26,4 +26,10 @@ class MealRepository @Inject constructor(private val mealDao: MealDao) {
     suspend fun getRandomMealExcluding(excludedIds: List<Long>): Meal? = mealDao.getRandomExcluding(excludedIds)
 
     suspend fun countMealsByName(name: String, excludeId: Long = 0): Int = mealDao.countByName(name, excludeId)
+    
+    suspend fun importMeals(meals: List<Meal>) {
+        meals.forEach { meal ->
+            insertMeal(meal)
+        }
+    }
 }

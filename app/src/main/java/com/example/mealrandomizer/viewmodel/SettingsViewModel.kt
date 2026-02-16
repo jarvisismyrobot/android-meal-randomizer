@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,4 +36,20 @@ class SettingsViewModel @Inject constructor(
     }
     
     suspend fun getMealsForExport(): List<Meal> = repository.getAllMealsList()
+    
+    suspend fun importMealsFromJson(json: String): Boolean {
+        return try {
+            val gson = Gson()
+            val mealType = object : TypeToken<List<Meal>>() {}.type
+            val meals = gson.fromJson<List<Meal>>(json, mealType)
+            if (meals != null) {
+                repository.importMeals(meals)
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
 }

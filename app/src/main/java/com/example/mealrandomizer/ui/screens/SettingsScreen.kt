@@ -33,6 +33,11 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileWriter
 import androidx.core.content.FileProvider
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import java.io.InputStream
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +49,38 @@ fun SettingsScreen(
     var exportInProgress by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    
+    var importInProgress by remember { mutableStateOf(false) }
+    var importError by remember { mutableStateOf<String?>(null) }
+    var lastBackClickTime by remember { mutableStateOf(0L) }
+    
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            coroutineScope.launch {
+                importInProgress = true
+                try {
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                    val json = inputStream?.bufferedReader()?.use { it.readText() }
+                    if (json != null) {
+                        val success = viewModel.importMealsFromJson(json)
+                        if (success) {
+                            Toast.makeText(context, "成功匯入菜式", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "匯入失敗：檔案格式錯誤", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(context, "無法讀取檔案", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(context, "匯入錯誤：${e.message}", Toast.LENGTH_SHORT).show()
+                } finally {
+                    importInProgress = false
+                }
+            }
+        }
+    }
     
     Scaffold(
         topBar = {
@@ -59,7 +96,13 @@ fun SettingsScreen(
                 ),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = {
+                            val now = System.currentTimeMillis()
+                            if (now - lastBackClickTime > 500) {
+                                lastBackClickTime = now
+                                navController.popBackStack()
+                            }
+                        },
                         modifier = Modifier.padding(start = 8.dp)
                     ) {
                         Icon(
@@ -194,8 +237,17 @@ fun SettingsScreen(
                     title = "匯入菜式",
                     subtitle = "從JSON文件匯入菜式資料",
                     onClick = {
-                        // Show toast for now - import functionality to be implemented
-                        Toast.makeText(context, "匯入功能即將推出", Toast.LENGTH_SHORT).show()
+                        if (!importInProgress) {
+                            importLauncher.launch("application/json")
+                        }
+                    },
+                    trailing = {
+                        if (importInProgress) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                        }
                     }
                 )
             }
