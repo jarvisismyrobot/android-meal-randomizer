@@ -478,6 +478,7 @@ fun CategoryChip(text: String, color: Color) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MealItemCard(
     meal: Meal,
