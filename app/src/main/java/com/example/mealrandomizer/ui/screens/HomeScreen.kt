@@ -306,7 +306,7 @@ fun DayCard(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "📅 第 $dayIndex 日",
+                    text = "第 $dayIndex 日",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.Bold

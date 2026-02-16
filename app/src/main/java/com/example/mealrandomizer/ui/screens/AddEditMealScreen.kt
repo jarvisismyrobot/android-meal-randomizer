@@ -44,7 +44,7 @@ fun AddEditMealScreen(
             .padding(16.dp)
     ) {
         Text(
-            text = if (mealId > 0) "編輯餸菜" else "新增餸菜",
+            text = if (mealId > 0) "編輯菜式" else "新增菜式",
             style = MaterialTheme.typography.headlineMedium
         )
         Spacer(modifier = Modifier.height(8.dp))

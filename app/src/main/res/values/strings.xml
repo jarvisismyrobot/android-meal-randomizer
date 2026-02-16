@@ -6,13 +6,13 @@
     <string name="add_meal">加餸</string>
     <string name="edit_meal">編輯</string>
     <string name="delete_meal">刪除</string>
-    <string name="meal_name">餸菜名稱</string>
+    <string name="meal_name">菜式名稱</string>
     <string name="description">描述</string>
     <string name="difficulty">難度</string>
     <string name="cooking_time">烹調時間 (分鐘)</string>
     <string name="calories">卡路里 (kcal)</string>
     <string name="categories">類別</string>
-    <string name="generate_meal">隨機選擇餸菜</string>
+    <string name="generate_meal">隨機選擇菜式</string>
     <string name="history">歷史記錄</string>
     <string name="settings">設定</string>
     <string name="share">分享</string>
@@ -20,13 +20,13 @@
     <string name="save">儲存</string>
     <string name="cancel">取消</string>
     <string name="add_edit_meal_title">新增/編輯餐點</string>
-    <string name="preload_sample_meals">載入樣本餸菜</string>
+    <string name="preload_sample_meals">載入樣本菜式</string>
     <string name="easy">容易</string>
     <string name="medium">中等</string>
     <string name="hard">困難</string>
     <string name="days">天數</string>
     <string name="day">日</string>
-    <string name="meal_generated">已生成餸菜</string>
+    <string name="meal_generated">已生成菜式</string>
     <string name="no_repeat">不重複</string>
     <string name="clear_history">清除歷史</string>
 </resources>

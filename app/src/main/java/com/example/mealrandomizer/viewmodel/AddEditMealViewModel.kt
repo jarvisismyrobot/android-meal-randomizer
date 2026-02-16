@@ -69,14 +69,14 @@ class AddEditMealViewModel @Inject constructor(
         // Validate name is not empty or blank
         val trimmedName = _name.value.trim()
         if (trimmedName.isBlank()) {
-            _saveError.value = "餸菜名稱不能為空"
+            _saveError.value = "菜式名稱不能為空"
             return false
         }
         
         // Check for duplicate name (case-insensitive, trim)
         val existingCount = repository.countMealsByName(trimmedName, excludeId = currentMealId)
         if (existingCount > 0) {
-            _saveError.value = "餸菜名稱已存在，請使用其他名稱"
+            _saveError.value = "菜式名稱已存在，請使用其他名稱"
             return false
         }
         
@@ -111,12 +111,12 @@ class AddEditMealViewModel @Inject constructor(
             } else {
                 val insertedId = repository.insertMeal(meal)
                 if (insertedId == -1L) {
-                    _saveError.value = "餸菜名稱已存在，請使用其他名稱"
+                    _saveError.value = "菜式名稱已存在，請使用其他名稱"
                     return false
                 }
             }
         } catch (e: android.database.sqlite.SQLiteConstraintException) {
-            _saveError.value = "餸菜名稱已存在，請使用其他名稱"
+            _saveError.value = "菜式名稱已存在，請使用其他名稱"
             return false
         }
         return true

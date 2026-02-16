@@ -1,5 +1,6 @@
 package com.example.mealrandomizer.ui.screens
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -86,7 +87,7 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Filled.Repeat,
                     title = "避免重複",
-                    subtitle = "防止同一餸菜在餐單中重複出現",
+                    subtitle = "防止同一菜式在餐單中重複出現",
                     trailing = {
                         Switch(
                             checked = avoidRepeats,
@@ -118,8 +119,8 @@ fun SettingsScreen(
             item {
                 SettingsItem(
                     icon = Icons.Filled.Download,
-                    title = "匯出餸菜",
-                    subtitle = "備份所有餸菜資料 (JSON格式)",
+                    title = "匯出菜式",
+                    subtitle = "備份所有菜式資料 (JSON格式)",
                     onClick = {
                         if (!exportInProgress) {
                             exportInProgress = true
@@ -133,9 +134,9 @@ fun SettingsScreen(
                                     action = Intent.ACTION_SEND
                                     type = "application/json"
                                     putExtra(Intent.EXTRA_TEXT, json)
-                                    putExtra(Intent.EXTRA_SUBJECT, "餸菜備份")
+                                    putExtra(Intent.EXTRA_SUBJECT, "菜式備份")
                                 }
-                                context.startActivity(Intent.createChooser(shareIntent, "分享餸菜備份"))
+                                context.startActivity(Intent.createChooser(shareIntent, "分享菜式備份"))
                                 exportInProgress = false
                             }
                         }
@@ -154,13 +155,11 @@ fun SettingsScreen(
             item {
                 SettingsItem(
                     icon = Icons.Filled.Upload,
-                    title = "匯入餸菜",
-                    subtitle = "從JSON文件匯入餸菜資料",
+                    title = "匯入菜式",
+                    subtitle = "從JSON文件匯入菜式資料",
                     onClick = {
-                        // TODO: Implement import functionality
-                        coroutineScope.launch {
-                            // Placeholder for import
-                        }
+                        // Show toast for now - import functionality to be implemented
+                        Toast.makeText(context, "匯入功能即將推出", Toast.LENGTH_SHORT).show()
                     }
                 )
             }

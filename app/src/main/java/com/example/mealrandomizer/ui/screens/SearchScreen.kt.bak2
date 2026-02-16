@@ -9,8 +9,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.FlowRow
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,7 +27,7 @@ import com.example.mealrandomizer.ui.theme.FoodColors
 import com.example.mealrandomizer.viewmodel.SearchViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     navController: NavController,
@@ -102,7 +99,7 @@ fun SearchScreen(
                             value = searchQuery,
                             onValueChange = { viewModel.setSearchQuery(it) },
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text("搜尋菜式名稱或描述...") },
+                            placeholder = { Text("搜尋餸菜名稱或描述...") },
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
@@ -191,7 +188,7 @@ fun SearchScreen(
                                 tint = MaterialTheme.colorScheme.outline
                             )
                             Text(
-                                text = "輸入關鍵字搜尋菜式",
+                                text = "輸入關鍵字搜尋餸菜",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -217,7 +214,7 @@ fun SearchScreen(
                                 tint = MaterialTheme.colorScheme.outline
                             )
                             Text(
-                                text = "找不到相關菜式",
+                                text = "找不到相關餸菜",
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text(
@@ -261,7 +258,7 @@ fun SearchScreen(
                 showDeleteDialog = false
                 mealToDelete = null
             },
-            title = { Text("刪除菜式") },
+            title = { Text("刪除餸菜") },
             text = { Text("確定要刪除「${mealToDelete?.name}」嗎？此操作無法還原。") },
             confirmButton = {
                 TextButton(
@@ -301,7 +298,7 @@ fun SearchScreen(
         AlertDialog(
             onDismissRequest = { showDeleteError = false },
             title = { Text("無法刪除") },
-            text = { Text("此菜式已在餐單中使用，請先從餐單中移除。") },
+            text = { Text("此餸菜已在餐單中使用，請先從餐單中移除。") },
             confirmButton = {
                 TextButton(
                     onClick = { showDeleteError = false }
@@ -477,8 +474,105 @@ fun CategoryChip(text: String, color: Color) {
         )
     }
 }
+                Checkbox(
+                    checked = filterDinner,
+                    onCheckedChange = { viewModel.setFilterDinner(it) }
+                )
+                Text("晚餐")
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "找到 ${searchResults.size} 個結果",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        if (searchResults.isEmpty()) {
+            Text(
+                text = if (searchQuery.isBlank()) "暫無餸菜，請先添加或載入樣本" else "找不到相關餸菜",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(16.dp)
+            )
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                items(searchResults) { meal ->
+                    MealItemCard(
+                        meal = meal,
+                        onEdit = {
+                            navController.navigate("addEdit/${meal.id}")
+                        },
+                        onDelete = {
+                            mealToDelete = meal
+                        }
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                if (backButtonEnabled) {
+                    backButtonEnabled = false
+                    navController.popBackStack()
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = backButtonEnabled
+        ) {
+            Text("返回")
+        }
+    }
 
-@OptIn(ExperimentalLayoutApi::class)
+    // Delete confirmation dialog
+    if (mealToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { mealToDelete = null },
+            title = { Text("刪除餸菜") },
+            text = { Text("確定要刪除「${mealToDelete!!.name}」嗎？") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            val success = viewModel.deleteMeal(mealToDelete!!)
+                            if (success) {
+                                mealToDelete = null
+                            } else {
+                                mealToDelete = null
+                                showDeleteError = true
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("刪除")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { mealToDelete = null }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
+    
+    // Delete error dialog
+    if (showDeleteError) {
+        AlertDialog(
+            onDismissRequest = { showDeleteError = false },
+            title = { Text("無法刪除") },
+            text = { Text("此餸菜已出現在餐單中，無法刪除") },
+            confirmButton = {
+                Button(onClick = { showDeleteError = false }) {
+                    Text("確定")
+                }
+            }
+        )
+    }
+}
+
 @Composable
 fun MealItemCard(
     meal: Meal,

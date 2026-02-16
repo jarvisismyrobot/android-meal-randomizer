@@ -1,0 +1,28 @@
+Android構建監控報告
+檢查時間：2026-02-16 12:37 (香港時間)
+
+最新構建狀態：
+1. **Build APK** (工作流ID: 22050126882)
+   - 狀態：失敗 ❌
+   - 提交：Remove explicit LocalIndication import, rely on material3.* star import
+   - 分支：master
+   - 錯誤摘要：
+     • 編譯錯誤：Unresolved reference: LocalIndication (SettingsScreen.kt:223)
+     • 警告：實驗性API使用 (SearchScreen.kt:398)
+   - 工作流URL：https://github.com/jarvisismyrobot/android-meal-randomizer/actions/runs/22050126882
+
+2. **Test APK on Emulator** (工作流ID: 22050126870)
+   - 狀態：失敗 ❌
+   - 提交：同Build APK
+   - 錯誤：與Build APK相同的編譯錯誤導致測試無法執行
+   - 工作流URL：https://github.com/jarvisismyrobot/android-meal-randomizer/actions/runs/22050126870
+
+根本原因：
+代碼中引用了不存在的 `LocalIndication` 變量。需要檢查導入語句或使用正確的Material3 API。
+
+建議操作：
+1. 檢查SettingsScreen.kt第223行，修正LocalIndication引用
+2. 考慮添加正確導入：`import androidx.compose.material3.LocalIndication`
+3. 或使用Material3的star導入：`import androidx.compose.material3.*`
+
+注意：APK構建失敗，無可下載的APK文件。
