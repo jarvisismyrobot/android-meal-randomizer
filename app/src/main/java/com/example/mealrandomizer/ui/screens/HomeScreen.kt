@@ -12,7 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,8 +58,8 @@ fun HomeScreen(
                 shape = MaterialTheme.shapes.large.copy(
                     topStart = MaterialTheme.shapes.large.topStart,
                     topEnd = MaterialTheme.shapes.large.topEnd,
-                    bottomStart = RoundedCornerShape(0.dp),
-                    bottomEnd = RoundedCornerShape(0.dp)
+                    bottomStart = CornerSize(0.dp),
+                    bottomEnd = CornerSize(0.dp)
                 )
             ) {
                 Row(
@@ -287,8 +291,8 @@ fun DayCard(
                         shape = MaterialTheme.shapes.extraLarge.copy(
                             topStart = MaterialTheme.shapes.extraLarge.topStart,
                             topEnd = MaterialTheme.shapes.extraLarge.topEnd,
-                            bottomStart = RoundedCornerShape(0.dp),
-                            bottomEnd = RoundedCornerShape(0.dp)
+                            bottomStart = CornerSize(0.dp),
+                            bottomEnd = CornerSize(0.dp)
                         )
                     )
                     .padding(horizontal = 20.dp, vertical = 16.dp),

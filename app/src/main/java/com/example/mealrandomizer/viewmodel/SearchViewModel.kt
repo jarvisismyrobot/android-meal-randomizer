@@ -94,6 +94,12 @@ class SearchViewModel @Inject constructor(
         }
     }
     
+    fun clearSearch() {
+        viewModelScope.launch {
+            _searchQuery.value = ""
+        }
+    }
+    
     suspend fun deleteMeal(meal: Meal): Boolean {
         // Check if meal is used in any meal plan
         val isUsed = mealPlanRepository.isMealUsedInPlans(meal.id)
@@ -102,5 +108,9 @@ class SearchViewModel @Inject constructor(
         }
         repository.deleteMeal(meal)
         return true
+    }
+    
+    suspend fun canDeleteMeal(mealId: Long): Boolean {
+        return !mealPlanRepository.isMealUsedInPlans(mealId)
     }
 }
