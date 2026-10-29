@@ -43,6 +43,16 @@ interface MealPlanDao {
     @Transaction
     @Query("SELECT * FROM meal_plans WHERE id = :id")
     suspend fun getPlanWithEntries(id: Long): MealPlanWithEntries?
+
+    // Reactive version: re-emits whenever the plan OR its entries change
+    // (Room tracks all tables in the @Transaction, so entry updates refresh the UI)
+    @Transaction
+    @Query("SELECT * FROM meal_plans ORDER BY generatedAt DESC LIMIT 1")
+    fun getLatestPlanWithEntriesFlow(): Flow<MealPlanWithEntries?>
+
+    // Delete one meal slot (a single day + meal time), used by "shuffle this meal"
+    @Query("DELETE FROM meal_plan_entries WHERE mealPlanId = :planId AND dayIndex = :dayIndex AND mealTime = :mealTime")
+    suspend fun deleteSlotEntries(planId: Long, dayIndex: Int, mealTime: Int)
     
     // Check if a meal is used in any meal plan
     @Query("SELECT COUNT(*) FROM meal_plan_entries WHERE mealId = :mealId")
