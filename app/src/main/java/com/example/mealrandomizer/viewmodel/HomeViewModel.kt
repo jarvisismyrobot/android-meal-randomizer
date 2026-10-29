@@ -54,6 +54,17 @@ class HomeViewModel @Inject constructor(
         return mealPlanRepository.getLatestMealPlan()
     }
 
+    /**
+     * Re-randomises one meal slot (e.g. "成餐換" for tonight's dinner).
+     * The UI updates automatically via [currentMealPlanWithEntries].
+     */
+    fun shuffleMeal(dayIndex: Int, mealTime: Int) {
+        viewModelScope.launch {
+            val plan = mealPlanRepository.getLatestMealPlan() ?: return@launch
+            mealPlanRepository.regenerateMealSlot(plan.id, dayIndex, mealTime)
+        }
+    }
+
     fun preloadSampleMeals() {
         viewModelScope.launch {
             // Check if meals already exist to avoid duplicates
