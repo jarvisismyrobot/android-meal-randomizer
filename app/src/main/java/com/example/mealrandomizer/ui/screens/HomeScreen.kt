@@ -1,32 +1,40 @@
 package com.example.mealrandomizer.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Nightlight
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.mealrandomizer.R
-import com.example.mealrandomizer.data.*
-import com.example.mealrandomizer.ui.theme.FoodColors
+import com.example.mealrandomizer.data.Meal
+import com.example.mealrandomizer.data.MealPlanWithEntries
+import com.example.mealrandomizer.ui.theme.Espresso
+import com.example.mealrandomizer.ui.theme.EspressoSoft
+import com.example.mealrandomizer.ui.theme.MealTint
 import com.example.mealrandomizer.viewmodel.HomeViewModel
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -36,317 +44,224 @@ fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val currentMealPlanWithEntries by viewModel.currentMealPlanWithEntries.collectAsState()
-    
-    // Auto-generate meal plan on first launch if none exists
+    val planWithEntries by viewModel.currentMealPlanWithEntries.collectAsState()
+    var selectedDay by remember { mutableIntStateOf(0) }
+
+    // Auto-generate a plan on first launch
     LaunchedEffect(Unit) {
-        if (currentMealPlanWithEntries == null) {
-            viewModel.generateMealPlanAsync { _ ->
-                // Plan generated, state will update via flow
-            }
+        if (planWithEntries == null) {
+            viewModel.generateMealPlanAsync { }
         }
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        bottomBar = {
-            Surface(
-                tonalElevation = 16.dp,
-                shadowElevation = 8.dp,
-                shape = MaterialTheme.shapes.large.copy(
-                    topStart = MaterialTheme.shapes.large.topStart,
-                    topEnd = MaterialTheme.shapes.large.topEnd,
-                    bottomStart = CornerSize(0.dp),
-                    bottomEnd = CornerSize(0.dp)
-                )
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = { HomeBottomBar(navController, currentRoute = "home") }
+    ) { padding ->
+        val data = planWithEntries
+        if (data == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    NavigationBarItem(
-                        selected = false,
-                        onClick = { navController.navigate("addEdit/-1") },
-                        icon = {
-                            Icon(Icons.Filled.Add, contentDescription = "加菜")
-                        },
-                        label = { Text("加菜", style = MaterialTheme.typography.labelSmall) }
-                    )
-                    NavigationBarItem(
-                        selected = false,
-                        onClick = {
-                            viewModel.generateMealPlanAsync { _ ->
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("已生成7日餐單")
-                                }
-                            }
-                        },
-                        icon = {
-                            Icon(Icons.Filled.Refresh, contentDescription = "重新生成餐單")
-                        },
-                        label = { Text("刷新", style = MaterialTheme.typography.labelSmall) }
-                    )
-                    NavigationBarItem(
-                        selected = false,
-                        onClick = { navController.navigate("settings") },
-                        icon = {
-                            Icon(Icons.Filled.Settings, contentDescription = "設定")
-                        },
-                        label = { Text("設定", style = MaterialTheme.typography.labelSmall) }
-                    )
-                    NavigationBarItem(
-                        selected = false,
-                        onClick = { navController.navigate("search") },
-                        icon = {
-                            Icon(Icons.Filled.Search, contentDescription = "搜尋")
-                        },
-                        label = { Text("搜尋", style = MaterialTheme.typography.labelSmall) }
-                    )
-                }
+                CircularProgressIndicator()
             }
+            return@Scaffold
         }
-    ) { paddingValues ->
-        Column(
+
+        val days = data.mealPlan.days.coerceAtLeast(1)
+        if (selectedDay >= days) selectedDay = 0
+        val mealsByDay = remember(data) { groupMealsByDay(data) }
+        val dayMeals = mealsByDay[selectedDay] ?: emptyMap()
+        val dinnerMeals = dayMeals[2].orEmpty()
+
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(padding),
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            // App header
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ),
-                shape = MaterialTheme.shapes.extraLarge
-            ) {
+            item { GreetingHeader() }
+            item {
+                DinnerHero(
+                    title = if (selectedDay == 0) "今晚精選" else "第 ${selectedDay + 1} 日晚餐",
+                    meals = dinnerMeals,
+                    onShuffle = { viewModel.shuffleMeal(selectedDay, 2) }
+                )
+            }
+            item {
+                WeekStrip(
+                    days = days,
+                    selectedDay = selectedDay,
+                    onSelect = { selectedDay = it }
+                )
+            }
+            item {
                 Text(
-                    text = "🍽️ ${stringResource(R.string.app_name)} 🍜",
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    fontWeight = FontWeight.Bold
+                    text = if (selectedDay == 0) "今日餐單" else "第 ${selectedDay + 1} 日餐單",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(start = 22.dp, end = 22.dp, top = 18.dp, bottom = 10.dp)
                 )
             }
-            
-            // Meal plan display
-            if (currentMealPlanWithEntries == null) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                MealPlanDisplay(
-                    mealPlanWithEntries = currentMealPlanWithEntries!!,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
+            items(3) { mealTime ->
+                MealRow(
+                    mealTime = mealTime,
+                    meals = dayMeals[mealTime].orEmpty(),
+                    onShuffle = { viewModel.shuffleMeal(selectedDay, mealTime) },
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 5.dp)
                 )
             }
         }
     }
 }
 
-@Composable
-fun MealPlanDisplay(
-    mealPlanWithEntries: MealPlanWithEntries,
-    modifier: Modifier = Modifier
-) {
-    val plan = mealPlanWithEntries.mealPlan
-    val entries = mealPlanWithEntries.entries
-    
-    // Group entries by day and meal time
-    val daysMap = mutableMapOf<Int, MutableMap<Int, List<MealPlanEntryWithMeal>>>()
-    
-    entries.forEach { entryWithMeal ->
-        val day = entryWithMeal.entry.dayIndex
-        val mealTime = entryWithMeal.entry.mealTime
-        
-        val dayMap = daysMap.getOrPut(day) { mutableMapOf() }
-        val mealList = dayMap.getOrPut(mealTime) { mutableListOf() }
-        (mealList as MutableList).add(entryWithMeal)
-    }
-    
-    // Sort meals by position
-    daysMap.values.forEach { dayMap ->
-        dayMap.values.forEach { mealList ->
-            (mealList as MutableList).sortBy { it.entry.position }
+/** Groups entries into dayIndex -> mealTime -> meals (ordered by position). */
+private fun groupMealsByDay(data: MealPlanWithEntries): Map<Int, Map<Int, List<Meal>>> {
+    val result = mutableMapOf<Int, MutableMap<Int, MutableList<Meal>>>()
+    data.entries
+        .sortedWith(compareBy({ it.entry.dayIndex }, { it.entry.mealTime }, { it.entry.position }))
+        .forEach { e ->
+            result.getOrPut(e.entry.dayIndex) { mutableMapOf() }
+                .getOrPut(e.entry.mealTime) { mutableListOf() }
+                .add(e.meal)
         }
+    return result
+}
+
+@Composable
+private fun GreetingHeader() {
+    val hour = remember { Calendar.getInstance().get(Calendar.HOUR_OF_DAY) }
+    val greeting = when {
+        hour < 12 -> "早晨"
+        hour < 18 -> "午安"
+        else -> "晚上好"
     }
-    
-    LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    val dateStr = remember {
+        SimpleDateFormat("M月d日 E", Locale.TRADITIONAL_CHINESE).format(Date())
+    }
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 22.dp)
+            .padding(top = 10.dp, bottom = 2.dp)
     ) {
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                shape = MaterialTheme.shapes.large,
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.RestaurantMenu,
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "${plan.days}日餐單",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "已為您生成未來${plan.days}日餐單",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                        )
-                    }
-                    Spacer(modifier = Modifier.weight(1f))
-                    Icon(
-                        imageVector = Icons.Filled.CalendarMonth,
-                        contentDescription = null,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-            }
-        }
-        
-        // Display each day
-        items(plan.days) { dayIndex ->
-            val dayMap = daysMap[dayIndex] ?: emptyMap()
-            val breakfastMeals = (dayMap[0] ?: emptyList()).map { it.meal }
-            val lunchMeals = (dayMap[1] ?: emptyList()).map { it.meal }
-            val dinnerMeals = (dayMap[2] ?: emptyList()).map { it.meal }
-            
-            DayCard(
-                dayIndex = dayIndex + 1,
-                breakfastMeals = breakfastMeals,
-                lunchMeals = lunchMeals,
-                dinnerMeals = dinnerMeals
-            )
-        }
+        Text(
+            text = greeting,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Text(
+            text = "$dateStr · 今晚有著落",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 3.dp)
+        )
     }
 }
 
 @Composable
-fun DayCard(
-    dayIndex: Int,
-    breakfastMeals: List<Meal>,
-    lunchMeals: List<Meal>,
-    dinnerMeals: List<Meal>
+private fun DinnerHero(
+    title: String,
+    meals: List<Meal>,
+    onShuffle: () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(true) }
-    
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .animateContentSize(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-        shape = MaterialTheme.shapes.extraLarge,
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        border = CardDefaults.outlinedCardBorder()
+            .padding(horizontal = 18.dp, vertical = 14.dp),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = Espresso)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            // Day header with toggle
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = MaterialTheme.shapes.extraLarge.copy(
-                            topStart = MaterialTheme.shapes.extraLarge.topStart,
-                            topEnd = MaterialTheme.shapes.extraLarge.topEnd,
-                            bottomStart = CornerSize(0.dp),
-                            bottomEnd = CornerSize(0.dp)
-                        )
-                    )
-                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Filled.CalendarToday,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "第 $dayIndex 日",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    text = title,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = EspressoSoft,
+                    letterSpacing = 2.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(
-                    onClick = { expanded = !expanded },
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                        contentDescription = if (expanded) "收起" else "展開",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                Text(
+                    text = "三餸",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color(0xFFC9B8A4)
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+            if (meals.isEmpty()) {
+                Text(
+                    text = "未有餐單",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color(0xFFFFF7EE)
+                )
+            } else {
+                meals.forEachIndexed { index, meal ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(26.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFE8590C).copy(alpha = 0.25f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "${index + 1}",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = EspressoSoft
+                            )
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            text = meal.name,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFFFF7EE),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
-            
-            if (expanded) {
-                // Meals grid
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Spacer(Modifier.height(14.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val totalMinutes = meals.sumOf { it.cookingTimeMinutes }
+                Text(
+                    text = if (meals.isEmpty()) "" else "家常菜 · 約${totalMinutes}分鐘",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFFC9B8A4)
+                )
+                Button(
+                    onClick = onShuffle,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE8590C),
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(999.dp),
+                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp)
                 ) {
-                    // Breakfast
-                    MealTimeCard(
-                        title = "🌅 早餐",
-                        meals = breakfastMeals,
-                        tintColor = FoodColors.breakfast,
-                        modifier = Modifier.weight(1f)
+                    Icon(
+                        imageVector = Icons.Filled.Shuffle,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
                     )
-                    
-                    // Lunch
-                    MealTimeCard(
-                        title = "☀️ 午餐",
-                        meals = lunchMeals,
-                        tintColor = FoodColors.lunch,
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    // Dinner
-                    MealTimeCard(
-                        title = "🌙 晚餐",
-                        meals = dinnerMeals,
-                        tintColor = FoodColors.dinner,
-                        modifier = Modifier.weight(1f)
-                    )
+                    Spacer(Modifier.width(7.dp))
+                    Text("成餐換", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -354,59 +269,209 @@ fun DayCard(
 }
 
 @Composable
-fun MealTimeCard(
-    title: String,
-    meals: List<Meal>,
-    tintColor: Color,
-    modifier: Modifier = Modifier
+private fun WeekStrip(
+    days: Int,
+    selectedDay: Int,
+    onSelect: (Int) -> Unit
 ) {
-    Card(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(
-            containerColor = tintColor.copy(alpha = 0.2f),
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    val labels = listOf("一", "二", "三", "四", "五", "六", "日")
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            
-            Divider(
+        for (i in 0 until days) {
+            val selected = i == selectedDay
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                thickness = 1.dp,
-                color = tintColor.copy(alpha = 0.3f)
-            )
-            
-            if (meals.isEmpty()) {
-                Text(
-                    text = "選擇3款",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                meals.forEachIndexed { index, meal ->
-                    Text(
-                        text = "${index + 1}. ${meal.name}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(vertical = 2.dp),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                    .weight(1f)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(
+                        if (selected) MaterialTheme.colorScheme.inverseSurface
+                        else Color.Transparent
                     )
-                }
+                    .clickable { onSelect(i) }
+                    .padding(vertical = 9.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = labels.getOrElse(i) { "${i + 1}" },
+                    fontSize = 13.sp,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                    color = if (selected) MaterialTheme.colorScheme.inverseOnSurface
+                    else MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
+}
+
+private data class MealTimeStyle(
+    val label: String,
+    val icon: ImageVector,
+    val tint: Color,
+    val tintBg: Color
+)
+
+private fun mealTimeStyle(mealTime: Int): MealTimeStyle = when (mealTime) {
+    0 -> MealTimeStyle("早餐", Icons.Filled.WbSunny, MealTint.breakfast, MealTint.breakfastBg)
+    1 -> MealTimeStyle("午餐", Icons.Filled.Restaurant, MealTint.lunch, MealTint.lunchBg)
+    else -> MealTimeStyle("晚餐", Icons.Filled.Nightlight, MealTint.dinner, MealTint.dinnerBg)
+}
+
+@Composable
+private fun MealRow(
+    mealTime: Int,
+    meals: List<Meal>,
+    onShuffle: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val style = mealTimeStyle(mealTime)
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(style.tintBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = style.icon,
+                    contentDescription = null,
+                    tint = style.tint,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Spacer(Modifier.width(13.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = style.label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = if (meals.isEmpty()) "未有餐單"
+                    else meals.joinToString(" · ") { it.name },
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+            IconButton(
+                onClick = onShuffle,
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Shuffle,
+                    contentDescription = "換一餐",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(17.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HomeBottomBar(navController: NavController, currentRoute: String) {
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp
+    ) {
+        bottomBarItem(
+            selected = currentRoute == "home",
+            onClick = { navController.navigate("home") { launchSingleTop = true } },
+            icon = Icons.Filled.Home,
+            label = "主頁"
+        )
+        bottomBarItem(
+            selected = false,
+            onClick = {
+                navController.navigate("search") {
+                    popUpTo("home") { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
+            icon = Icons.Filled.Search,
+            label = "搵食"
+        )
+        bottomBarItem(
+            selected = false,
+            onClick = {
+                navController.navigate("addEdit/-1") {
+                    popUpTo("home") { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
+            icon = Icons.Filled.Add,
+            label = "加菜"
+        )
+        bottomBarItem(
+            selected = false,
+            onClick = {
+                navController.navigate("history") {
+                    popUpTo("home") { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
+            icon = Icons.Filled.History,
+            label = "記錄"
+        )
+        bottomBarItem(
+            selected = false,
+            onClick = {
+                navController.navigate("settings") {
+                    popUpTo("home") { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
+            icon = Icons.Filled.Settings,
+            label = "設定"
+        )
+    }
+}
+
+@Composable
+private fun RowScope.bottomBarItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    icon: ImageVector,
+    label: String
+) {
+    NavigationBarItem(
+        selected = selected,
+        onClick = onClick,
+        icon = { Icon(icon, contentDescription = label) },
+        label = { Text(label, style = MaterialTheme.typography.labelSmall) },
+        colors = NavigationBarItemDefaults.colors(
+            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            selectedTextColor = MaterialTheme.colorScheme.primary,
+            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    )
 }

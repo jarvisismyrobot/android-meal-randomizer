@@ -42,20 +42,46 @@ class MealPlanRepository @Inject constructor(
         return usageCount > 0
     }
     
-    fun getLatestMealPlanWithEntriesFlow(): Flow<MealPlanWithEntries?> = 
-        mealPlanDao.getAll()
-            .map { plans -> plans.firstOrNull() }
-            .flatMapLatest { plan ->
-                if (plan != null) {
-                    // Create a flow that fetches the full plan with entries
-                    flow {
-                        val planWithEntries = mealPlanDao.getPlanWithEntries(plan.id)
-                        emit(planWithEntries)
-                    }
-                } else {
-                    flowOf(null)
-                }
+    fun getLatestMealPlanWithEntriesFlow(): Flow<MealPlanWithEntries?> =
+        mealPlanDao.getLatestPlanWithEntriesFlow()
+
+    /**
+     * Re-randomises one meal slot (e.g. tonight's dinner): deletes the current
+     * dishes for that day + meal time and picks fresh ones that are not already
+     * used elsewhere in the plan. Returns the picked meals, or empty if the
+     * pool is exhausted (existing dishes are kept in that case).
+     */
+    suspend fun regenerateMealSlot(
+        planId: Long,
+        dayIndex: Int,
+        mealTime: Int,
+        dishesPerMeal: Int = 3
+    ): List<Meal> {
+        val category = when (mealTime) {
+            0 -> Category.BREAKFAST
+            1 -> Category.LUNCH
+            else -> Category.DINNER
+        }
+        val pool = mealDao.getByCategoryList(category)
+        val current = mealPlanDao.getPlanWithEntries(planId) ?: return emptyList()
+        val usedIds = current.entries.map { it.meal.id }.toSet()
+        val fresh = pool.filter { it.id !in usedIds }.shuffled()
+        if (fresh.isEmpty()) return emptyList()
+        val picked = fresh.take(dishesPerMeal)
+        mealPlanDao.deleteSlotEntries(planId, dayIndex, mealTime)
+        mealPlanDao.insertEntries(
+            picked.mapIndexed { index, meal ->
+                MealPlanEntry(
+                    mealPlanId = planId,
+                    mealId = meal.id,
+                    dayIndex = dayIndex,
+                    mealTime = mealTime,
+                    position = index
+                )
             }
+        )
+        return picked
+    }
     
     suspend fun generateMealPlan(
         days: Int = 7,
