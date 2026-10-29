@@ -22,6 +22,7 @@
     font-family: -apple-system, "PingFang HK", "Microsoft JhengHei", sans-serif;
     background: var(--paper); color: var(--ink);
     max-width: 640px; margin: 0 auto; padding: 16px;
+    padding-bottom: 90px;
     -webkit-tap-highlight-color: transparent;
   }
   header { padding: 12px 4px 16px; }
@@ -63,6 +64,7 @@
   .tag.lu { background: var(--lu-bg); color: var(--lu-ink); }
   .tag.di { background: var(--di-bg); color: var(--di-ink); }
   .meal .dishes { font-size: 17px; margin-top: 10px; line-height: 1.6; }
+  .meal .rules-hint { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
   .shuffle {
     border: 1px solid var(--line); background: none; color: var(--ink-soft);
     border-radius: 999px; padding: 6px 14px; font-size: 14px; cursor: pointer;
@@ -76,95 +78,228 @@
   .primary { background: var(--persimmon); color: #fff; }
   .primary:active { background: var(--persimmon-dark); }
   .ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line) !important; }
+  /* tabs */
+  .tabbar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface); border-top: 1px solid var(--line);
+    display: flex; max-width: 640px; margin: 0 auto;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  }
+  .tabbar button {
+    flex: 1; border: 0; background: none; font-size: 13px; font-weight: 700;
+    color: var(--ink-soft); padding: 10px; cursor: pointer; border-radius: 12px;
+  }
+  .tabbar button.active { color: var(--persimmon); background: var(--lu-bg); }
+  .tabbar .ico { font-size: 20px; display: block; margin-bottom: 2px; }
+  .page { display: none; }
+  .page.active { display: block; }
+  /* food list */
+  .search {
+    width: 100%; padding: 12px 16px; font-size: 16px;
+    border: 1px solid var(--line); border-radius: 12px; margin-bottom: 12px;
+    background: var(--surface);
+  }
+  .food-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: 10px 14px; margin-bottom: 8px;
+  }
+  .food-item .name { font-size: 16px; }
+  .food-item .cats { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .food-item .del {
+    border: 0; background: none; color: #c0392b; font-size: 18px;
+    cursor: pointer; padding: 6px;
+  }
+  .cat-filter { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px; }
+  .cat-filter button {
+    white-space: nowrap; border: 1px solid var(--line); background: var(--surface);
+    border-radius: 999px; padding: 8px 14px; font-size: 14px; cursor: pointer;
+  }
+  .cat-filter button.active { background: var(--ink); color: #FAF5EC; border-color: var(--ink); }
+  .add-form {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 16px; padding: 16px; margin-bottom: 16px;
+  }
+  .add-form input[type=text] {
+    width: 100%; padding: 10px 12px; font-size: 16px;
+    border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px;
+  }
+  .add-form .cats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .add-form label {
+    font-size: 14px; border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 12px; cursor: pointer;
+  }
+  .add-form input[type=checkbox] { display: none; }
+  .add-form input[type=checkbox]:checked + span { font-weight: 700; color: var(--persimmon); }
+  .add-form label:has(input:checked) { border-color: var(--persimmon); background: var(--lu-bg); }
+  .add-form button {
+    width: 100%; padding: 12px; background: var(--persimmon); color: #fff;
+    border: 0; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer;
+  }
+  /* rules */
+  .rule-card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 16px; padding: 16px; margin-bottom: 12px;
+  }
+  .rule-card .title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .rule-card .desc { font-size: 13px; color: var(--ink-soft); margin-bottom: 10px; line-height: 1.5; }
+  .rule-card input[type=text] {
+    width: 100%; padding: 10px 12px; font-size: 16px;
+    border: 1px solid var(--line); border-radius: 10px;
+  }
+  .rule-card .eg { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+  .save-rules {
+    width: 100%; padding: 14px; background: var(--persimmon); color: #fff;
+    border: 0; border-radius: 14px; font-size: 16px; font-weight: 700;
+    cursor: pointer; margin: 8px 0 40px;
+  }
+  h2 { font-size: 20px; margin: 8px 0 16px; }
   footer { text-align: center; color: var(--ink-soft); font-size: 12px; padding-bottom: 24px; }
 </style>
 </head>
 <body>
-<header>
-  <div class="hi" id="greeting">今日食乜？</div>
-  <div class="date" id="today"></div>
-</header>
 
-<div class="hero">
-  <div class="label" id="heroLabel">今晚食乜</div>
-  <div class="dishes" id="heroDishes"></div>
-  <button onclick="shuffleMeal(selectedDay, 'DINNER')">成餐換 🔀</button>
+<!-- ============ PAGE: planner ============ -->
+<div class="page active" id="page-home">
+  <header>
+    <div class="hi" id="greeting">今日食乜？</div>
+    <div class="date" id="today"></div>
+  </header>
+  <div class="hero">
+    <div class="label" id="heroLabel">今晚食乜</div>
+    <div class="dishes" id="heroDishes"></div>
+    <button onclick="shuffleMeal(selectedDay, 'DINNER')">成餐換 🔀</button>
+  </div>
+  <div class="week" id="week"></div>
+  <div id="meals"></div>
+  <div class="actions">
+    <button class="primary" onclick="generateWeek()">重新計劃一週 🍳</button>
+    <button class="ghost" onclick="shuffleMeal(selectedDay, 'DINNER')">今晚重抽</button>
+  </div>
+  <footer>煮乜食 v2 · web 版</footer>
 </div>
 
-<div class="week" id="week"></div>
-<div id="meals"></div>
-
-<div class="actions">
-  <button class="primary" onclick="generateWeek()">重新計劃一週 🍳</button>
-  <button class="ghost" onclick="shuffleMeal(selectedDay, 'DINNER')">今晚重抽</button>
+<!-- ============ PAGE: food list ============ -->
+<div class="page" id="page-food">
+  <h2>🍱 菜式一覽</h2>
+  <div class="add-form">
+    <input type="text" id="newFoodName" placeholder="新菜式名稱，例如：芝士蛋治">
+    <div class="cats" id="newFoodCats"></div>
+    <button onclick="addFood()">＋ 加入菜式</button>
+  </div>
+  <input type="text" class="search" id="foodSearch" placeholder="🔍 搜尋菜式…" oninput="renderFoodList()">
+  <div class="cat-filter" id="catFilter"></div>
+  <div id="foodList"></div>
+  <footer>長按唔到，㩒 🗑 就刪</footer>
 </div>
 
-<footer>煮乜食 v2 · web 版</footer>
+<!-- ============ PAGE: rules ============ -->
+<div class="page" id="page-rules">
+  <h2>📋 配餐規則</h2>
+  <p style="font-size:14px;color:var(--ink-soft);margin-bottom:16px;line-height:1.6;">
+    每餐可以設定「必含」關鍵字，系統出餐嗰陣會盡量每樣揀返一道有嗰個字嘅餸。
+    用半形逗號 <b>,</b> 分開。
+  </p>
+  <div id="rulesForm"></div>
+  <button class="save-rules" onclick="saveRules()">💾 儲存規則</button>
+</div>
+
+<nav class="tabbar">
+  <button class="active" onclick="switchTab('home', this)"><span class="ico">🏠</span>主頁</button>
+  <button onclick="switchTab('food', this)"><span class="ico">🍱</span>菜式</button>
+  <button onclick="switchTab('rules', this)"><span class="ico">📋</span>規則</button>
+</nav>
 
 <script>
-const MEALS = [{"name": "腸粉", "categories": ["BREAKFAST", "VEGETARIAN"]}, {"name": "燒賣", "categories": ["BREAKFAST", "SNACK"]}, {"name": "菠蘿油", "categories": ["BREAKFAST", "SNACK"]}, {"name": "奶茶", "categories": ["BREAKFAST", "SNACK"]}, {"name": "蝦餃", "categories": ["BREAKFAST", "SNACK"]}, {"name": "西多士", "categories": ["BREAKFAST", "DESSERT"]}, {"name": "沙爹牛肉麵", "categories": ["BREAKFAST", "LUNCH"]}, {"name": "鴛鴦", "categories": ["BREAKFAST"]}, {"name": "炸兩", "categories": ["BREAKFAST"]}, {"name": "鹹煎餅", "categories": ["BREAKFAST", "SNACK"]}, {"name": "糯米雞", "categories": ["BREAKFAST", "HEARTY"]}, {"name": "叉燒包", "categories": ["BREAKFAST", "SNACK"]}, {"name": "流沙包", "categories": ["BREAKFAST", "DESSERT"]}, {"name": "皮蛋瘦肉粥", "categories": ["BREAKFAST", "HEARTY"]}, {"name": "及第粥", "categories": ["BREAKFAST", "HEARTY"]}, {"name": "煎堆", "categories": ["BREAKFAST", "SNACK"]}, {"name": "鹹水角", "categories": ["BREAKFAST", "SNACK"]}, {"name": "春卷", "categories": ["BREAKFAST", "SNACK", "LUNCH"]}, {"name": "蘿蔔糕", "categories": ["BREAKFAST", "VEGETARIAN"]}, {"name": "馬拉糕", "categories": ["BREAKFAST", "DESSERT"]}, {"name": "雞蛋仔", "categories": ["BREAKFAST", "SNACK"]}, {"name": "格仔餅", "categories": ["BREAKFAST", "DESSERT"]}, {"name": "炒麵", "categories": ["BREAKFAST", "LUNCH", "DINNER"]}, {"name": "豬腸粉", "categories": ["BREAKFAST", "VEGETARIAN"]}, {"name": "豆漿", "categories": ["BREAKFAST", "HEALTHY"]}, {"name": "叉燒飯", "categories": ["LUNCH", "DINNER", "HEARTY"]}, {"name": "雲吞麵", "categories": ["LUNCH", "DINNER"]}, {"name": "魚蛋粉", "categories": ["LUNCH", "DINNER"]}, {"name": "乾炒牛河", "categories": ["LUNCH", "DINNER"]}, {"name": "蒸排骨", "categories": ["LUNCH", "DINNER"]}, {"name": "碗仔翅", "categories": ["LUNCH", "DINNER"]}, {"name": "車仔麵", "categories": ["LUNCH", "DINNER"]}, {"name": "鹹魚雞粒炒飯", "categories": ["LUNCH", "DINNER"]}, {"name": "揚州炒飯", "categories": ["LUNCH", "DINNER"]}, {"name": "星洲炒米", "categories": ["LUNCH", "DINNER"]}, {"name": "滑蛋蝦仁飯", "categories": ["LUNCH", "DINNER"]}, {"name": "豉椒排骨飯", "categories": ["LUNCH", "DINNER"]}, {"name": "粟米肉粒飯", "categories": ["LUNCH", "DINNER"]}, {"name": "咖喱雞飯", "categories": ["LUNCH", "DINNER"]}, {"name": "番茄牛肉飯", "categories": ["LUNCH", "DINNER"]}, {"name": "麻婆豆腐飯", "categories": ["LUNCH", "DINNER", "VEGETARIAN"]}, {"name": "海南雞飯", "categories": ["LUNCH", "DINNER"]}, {"name": "肉醬意粉", "categories": ["LUNCH", "DINNER"]}, {"name": "焗豬扒飯", "categories": ["LUNCH", "DINNER"]}, {"name": "焗芝士海鮮飯", "categories": ["LUNCH", "DINNER"]}, {"name": "炸雞髀飯", "categories": ["LUNCH", "DINNER"]}, {"name": "燒味雙拼飯", "categories": ["LUNCH", "DINNER"]}, {"name": "鹹蛋肉餅飯", "categories": ["LUNCH", "DINNER"]}, {"name": "豉汁蒸鱔飯", "categories": ["LUNCH", "DINNER"]}, {"name": "魚香茄子飯", "categories": ["LUNCH", "DINNER", "VEGETARIAN"]}, {"name": "煲仔飯", "categories": ["DINNER", "HEARTY"]}, {"name": "豉油雞", "categories": ["DINNER", "HEARTY"]}, {"name": "白切雞", "categories": ["DINNER", "HEARTY"]}, {"name": "燒鵝", "categories": ["DINNER", "HEARTY"]}, {"name": "梅菜扣肉", "categories": ["DINNER", "HEARTY"]}, {"name": "咕嚕肉", "categories": ["DINNER"]}, {"name": "椒鹽鮮魷", "categories": ["DINNER"]}, {"name": "京都排骨", "categories": ["DINNER"]}, {"name": "清蒸海鮮", "categories": ["DINNER", "HEALTHY"]}, {"name": "避風塘炒蟹", "categories": ["DINNER"]}, {"name": "薑蔥炒蟹", "categories": ["DINNER"]}, {"name": "椒鹽豆腐", "categories": ["DINNER", "VEGETARIAN"]}, {"name": "瑤柱扒時蔬", "categories": ["DINNER", "VEGETARIAN", "HEALTHY"]}, {"name": "蒜蓉炒時蔬", "categories": ["DINNER", "VEGETARIAN", "HEALTHY"]}, {"name": "羅漢齋", "categories": ["DINNER", "VEGETARIAN", "HEALTHY"]}, {"name": "咖喱牛腩", "categories": ["DINNER", "HEARTY"]}, {"name": "枝竹羊腩煲", "categories": ["DINNER", "HEARTY"]}, {"name": "粟米魚塊", "categories": ["DINNER"]}, {"name": "椒絲腐乳通菜", "categories": ["DINNER", "VEGETARIAN"]}, {"name": "鹹蛋黃炒蝦", "categories": ["DINNER"]}, {"name": "豉汁蒸排骨", "categories": ["DINNER"]}, {"name": "粟米斑塊", "categories": ["DINNER"]}, {"name": "紅燒豆腐", "categories": ["DINNER", "VEGETARIAN"]}, {"name": "豉椒炒蜆", "categories": ["DINNER"]}, {"name": "清炒時蔬", "categories": ["DINNER", "VEGETARIAN", "HEALTHY"]}, {"name": "蛋撻", "categories": ["DESSERT", "SNACK"]}, {"name": "咖喱魚蛋", "categories": ["SNACK", "LUNCH"]}, {"name": "楊枝甘露", "categories": ["DESSERT", "HEALTHY"]}, {"name": "齋滷味", "categories": ["VEGETARIAN", "HEALTHY", "SNACK"]}, {"name": "薑汁撞奶", "categories": ["DESSERT", "HEALTHY"]}, {"name": "腐竹糖水", "categories": ["DESSERT", "HEALTHY"]}, {"name": "紅豆沙", "categories": ["DESSERT", "HEALTHY"]}, {"name": "芝麻糊", "categories": ["DESSERT", "HEALTHY"]}, {"name": "花生糊", "categories": ["DESSERT", "HEALTHY"]}, {"name": "杏仁茶", "categories": ["DESSERT", "HEALTHY"]}, {"name": "番薯糖水", "categories": ["DESSERT", "HEALTHY"]}, {"name": "豆腐花", "categories": ["DESSERT", "HEALTHY"]}, {"name": "燉蛋", "categories": ["DESSERT", "HEALTHY"]}, {"name": "燉雪梨", "categories": ["DESSERT", "HEALTHY"]}, {"name": "木瓜雪耳糖水", "categories": ["DESSERT", "HEALTHY"]}, {"name": "綠豆沙", "categories": ["DESSERT", "HEALTHY"]}, {"name": "合桃露", "categories": ["DESSERT", "HEALTHY"]}, {"name": "鳳凰卷", "categories": ["DESSERT", "SNACK"]}, {"name": "老婆餅", "categories": ["DESSERT", "SNACK"]}, {"name": "雞仔餅", "categories": ["SNACK"]}, {"name": "笑口棗", "categories": ["SNACK"]}, {"name": "牛耳", "categories": ["SNACK"]}, {"name": "蛋散", "categories": ["SNACK", "DESSERT"]}, {"name": "糖不甩", "categories": ["DESSERT", "SNACK"]}, {"name": "缽仔糕", "categories": ["SNACK", "DESSERT"]}, {"name": "燉湯", "categories": ["DINNER", "HEALTHY"]}, {"name": "冬瓜盅", "categories": ["DINNER", "HEALTHY"]}, {"name": "粟米湯", "categories": ["LUNCH", "DINNER"]}, {"name": "酸辣湯", "categories": ["LUNCH", "DINNER"]}, {"name": "羅宋湯", "categories": ["LUNCH", "DINNER"]}, {"name": "忌廉湯", "categories": ["LUNCH", "DINNER"]}, {"name": "炒時蔬", "categories": ["LUNCH", "DINNER", "VEGETARIAN"]}, {"name": "蒸水蛋", "categories": ["LUNCH", "DINNER"]}, {"name": "煎釀三寶", "categories": ["LUNCH", "DINNER", "VEGETARIAN"]}, {"name": "炸雲吞", "categories": ["SNACK", "LUNCH"]}, {"name": "煎餃子", "categories": ["LUNCH", "DINNER"]}, {"name": "水餃", "categories": ["LUNCH", "DINNER"]}, {"name": "炒飯", "categories": ["LUNCH", "DINNER"]}, {"name": "湯麵", "categories": ["LUNCH", "DINNER"]}, {"name": "拌麵", "categories": ["LUNCH", "DINNER"]}, {"name": "粥", "categories": ["BREAKFAST", "HEALTHY"]}, {"name": "湯飯", "categories": ["LUNCH", "DINNER"]}, {"name": "煲仔菜", "categories": ["DINNER", "HEARTY"]}, {"name": "燜麵", "categories": ["LUNCH", "DINNER"]}, {"name": "涼拌菜", "categories": ["LUNCH", "DINNER", "VEGETARIAN"]}, {"name": "沙拉", "categories": ["LUNCH", "DINNER", "VEGETARIAN", "HEALTHY"]}, {"name": "水果拼盤", "categories": ["BREAKFAST", "DESSERT", "HEALTHY"]}, {"name": "果汁", "categories": ["BREAKFAST", "HEALTHY"]}, {"name": "酸奶", "categories": ["BREAKFAST", "HEALTHY"]}, {"name": "麥片", "categories": ["BREAKFAST", "HEALTHY"]}, {"name": "三文治", "categories": ["BREAKFAST", "LUNCH"]}, {"name": "漢堡包", "categories": ["LUNCH", "DINNER"]}];
+const BUILTIN_MEALS = [{"name": "腸粉", "categories": ["BREAKFAST", "VEGETARIAN"]}, {"name": "燒賣", "categories": ["BREAKFAST", "SNACK"]}, {"name": "菠蘿油", "categories": ["BREAKFAST", "SNACK"]}, {"name": "奶茶", "categories": ["BREAKFAST", "SNACK"]}, {"name": "蝦餃", "categories": ["BREAKFAST", "SNACK"]}, {"name": "西多士", "categories": ["BREAKFAST", "DESSERT"]}, {"name": "沙爹牛肉麵", "categories": ["BREAKFAST", "LUNCH"]}, {"name": "鴛鴦", "categories": ["BREAKFAST"]}, {"name": "炸兩", "categories": ["BREAKFAST"]}, {"name": "鹹煎餅", "categories": ["BREAKFAST", "SNACK"]}, {"name": "糯米雞", "categories": ["BREAKFAST", "HEARTY"]}, {"name": "叉燒包", "categories": ["BREAKFAST", "SNACK"]}, {"name": "流沙包", "categories": ["BREAKFAST", "DESSERT"]}, {"name": "皮蛋瘦肉粥", "categories": ["BREAKFAST", "HEARTY"]}, {"name": "及第粥", "categories": ["BREAKFAST", "HEARTY"]}, {"name": "煎堆", "categories": ["BREAKFAST", "SNACK"]}, {"name": "鹹水角", "categories": ["BREAKFAST", "SNACK"]}, {"name": "春卷", "categories": ["BREAKFAST", "SNACK", "LUNCH"]}, {"name": "蘿蔔糕", "categories": ["BREAKFAST", "VEGETARIAN"]}, {"name": "馬拉糕", "categories": ["BREAKFAST", "DESSERT"]}, {"name": "雞蛋仔", "categories": ["BREAKFAST", "SNACK"]}, {"name": "格仔餅", "categories": ["BREAKFAST", "DESSERT"]}, {"name": "炒麵", "categories": ["BREAKFAST", "LUNCH", "DINNER"]}, {"name": "豬腸粉", "categories": ["BREAKFAST", "VEGETARIAN"]}, {"name": "豆漿", "categories": ["BREAKFAST", "HEALTHY"]}, {"name": "叉燒飯", "categories": ["LUNCH", "DINNER", "HEARTY"]}, {"name": "雲吞麵", "categories": ["LUNCH", "DINNER"]}, {"name": "魚蛋粉", "categories": ["LUNCH", "DINNER"]}, {"name": "乾炒牛河", "categories": ["LUNCH", "DINNER"]}, {"name": "蒸排骨", "categories": ["LUNCH", "DINNER"]}, {"name": "碗仔翅", "categories": ["LUNCH", "DINNER"]}, {"name": "車仔麵", "categories": ["LUNCH", "DINNER"]}, {"name": "鹹魚雞粒炒飯", "categories": ["LUNCH", "DINNER"]}, {"name": "揚州炒飯", "categories": ["LUNCH", "DINNER"]}, {"name": "星洲炒米", "categories": ["LUNCH", "DINNER"]}, {"name": "滑蛋蝦仁飯", "categories": ["LUNCH", "DINNER"]}, {"name": "豉椒排骨飯", "categories": ["LUNCH", "DINNER"]}, {"name": "粟米肉粒飯", "categories": ["LUNCH", "DINNER"]}, {"name": "咖喱雞飯", "categories": ["LUNCH", "DINNER"]}, {"name": "番茄牛肉飯", "categories": ["LUNCH", "DINNER"]}, {"name": "麻婆豆腐飯", "categories": ["LUNCH", "DINNER", "VEGETARIAN"]}, {"name": "海南雞飯", "categories": ["LUNCH", "DINNER"]}, {"name": "肉醬意粉", "categories": ["LUNCH", "DINNER"]}, {"name": "焗豬扒飯", "categories": ["LUNCH", "DINNER"]}, {"name": "焗芝士海鮮飯", "categories": ["LUNCH", "DINNER"]}, {"name": "炸雞髀飯", "categories": ["LUNCH", "DINNER"]}, {"name": "燒味雙拼飯", "categories": ["LUNCH", "DINNER"]}, {"name": "鹹蛋肉餅飯", "categories": ["LUNCH", "DINNER"]}, {"name": "豉汁蒸鱔飯", "categories": ["LUNCH", "DINNER"]}, {"name": "魚香茄子飯", "categories": ["LUNCH", "DINNER", "VEGETARIAN"]}, {"name": "煲仔飯", "categories": ["DINNER", "HEARTY"]}, {"name": "豉油雞", "categories": ["DINNER", "HEARTY"]}, {"name": "白切雞", "categories": ["DINNER", "HEARTY"]}, {"name": "燒鵝", "categories": ["DINNER", "HEARTY"]}, {"name": "梅菜扣肉", "categories": ["DINNER", "HEARTY"]}, {"name": "咕嚕肉", "categories": ["DINNER"]}, {"name": "椒鹽鮮魷", "categories": ["DINNER"]}, {"name": "京都排骨", "categories": ["DINNER"]}, {"name": "清蒸海鮮", "categories": ["DINNER", "HEALTHY"]}, {"name": "避風塘炒蟹", "categories": ["DINNER"]}, {"name": "薑蔥炒蟹", "categories": ["DINNER"]}, {"name": "椒鹽豆腐", "categories": ["DINNER", "VEGETARIAN"]}, {"name": "瑤柱扒時蔬", "categories": ["DINNER", "VEGETARIAN", "HEALTHY"]}, {"name": "蒜蓉炒時蔬", "categories": ["DINNER", "VEGETARIAN", "HEALTHY"]}, {"name": "羅漢齋", "categories": ["DINNER", "VEGETARIAN", "HEALTHY"]}, {"name": "咖喱牛腩", "categories": ["DINNER", "HEARTY"]}, {"name": "枝竹羊腩煲", "categories": ["DINNER", "HEARTY"]}, {"name": "粟米魚塊", "categories": ["DINNER"]}, {"name": "椒絲腐乳通菜", "categories": ["DINNER", "VEGETARIAN"]}, {"name": "鹹蛋黃炒蝦", "categories": ["DINNER"]}, {"name": "豉汁蒸排骨", "categories": ["DINNER"]}, {"name": "粟米斑塊", "categories": ["DINNER"]}, {"name": "紅燒豆腐", "categories": ["DINNER", "VEGETARIAN"]}, {"name": "豉椒炒蜆", "categories": ["DINNER"]}, {"name": "清炒時蔬", "categories": ["DINNER", "VEGETARIAN", "HEALTHY"]}, {"name": "蛋撻", "categories": ["DESSERT", "SNACK"]}, {"name": "咖喱魚蛋", "categories": ["SNACK", "LUNCH"]}, {"name": "楊枝甘露", "categories": ["DESSERT", "HEALTHY"]}, {"name": "齋滷味", "categories": ["VEGETARIAN", "HEALTHY", "SNACK"]}, {"name": "薑汁撞奶", "categories": ["DESSERT", "HEALTHY"]}, {"name": "腐竹糖水", "categories": ["DESSERT", "HEALTHY"]}, {"name": "紅豆沙", "categories": ["DESSERT", "HEALTHY"]}, {"name": "芝麻糊", "categories": ["DESSERT", "HEALTHY"]}, {"name": "花生糊", "categories": ["DESSERT", "HEALTHY"]}, {"name": "杏仁茶", "categories": ["DESSERT", "HEALTHY"]}, {"name": "番薯糖水", "categories": ["DESSERT", "HEALTHY"]}, {"name": "豆腐花", "categories": ["DESSERT", "HEALTHY"]}, {"name": "燉蛋", "categories": ["DESSERT", "HEALTHY"]}, {"name": "燉雪梨", "categories": ["DESSERT", "HEALTHY"]}, {"name": "木瓜雪耳糖水", "categories": ["DESSERT", "HEALTHY"]}, {"name": "綠豆沙", "categories": ["DESSERT", "HEALTHY"]}, {"name": "合桃露", "categories": ["DESSERT", "HEALTHY"]}, {"name": "鳳凰卷", "categories": ["DESSERT", "SNACK"]}, {"name": "老婆餅", "categories": ["DESSERT", "SNACK"]}, {"name": "雞仔餅", "categories": ["SNACK"]}, {"name": "笑口棗", "categories": ["SNACK"]}, {"name": "牛耳", "categories": ["SNACK"]}, {"name": "蛋散", "categories": ["SNACK", "DESSERT"]}, {"name": "糖不甩", "categories": ["DESSERT", "SNACK"]}, {"name": "缽仔糕", "categories": ["SNACK", "DESSERT"]}, {"name": "燉湯", "categories": ["DINNER", "HEALTHY"]}, {"name": "冬瓜盅", "categories": ["DINNER", "HEALTHY"]}, {"name": "粟米湯", "categories": ["LUNCH", "DINNER"]}, {"name": "酸辣湯", "categories": ["LUNCH", "DINNER"]}, {"name": "羅宋湯", "categories": ["LUNCH", "DINNER"]}, {"name": "忌廉湯", "categories": ["LUNCH", "DINNER"]}, {"name": "炒時蔬", "categories": ["LUNCH", "DINNER", "VEGETARIAN"]}, {"name": "蒸水蛋", "categories": ["LUNCH", "DINNER"]}, {"name": "煎釀三寶", "categories": ["LUNCH", "DINNER", "VEGETARIAN"]}, {"name": "炸雲吞", "categories": ["SNACK", "LUNCH"]}, {"name": "煎餃子", "categories": ["LUNCH", "DINNER"]}, {"name": "水餃", "categories": ["LUNCH", "DINNER"]}, {"name": "炒飯", "categories": ["LUNCH", "DINNER"]}, {"name": "湯麵", "categories": ["LUNCH", "DINNER"]}, {"name": "拌麵", "categories": ["LUNCH", "DINNER"]}, {"name": "粥", "categories": ["BREAKFAST", "HEALTHY"]}, {"name": "湯飯", "categories": ["LUNCH", "DINNER"]}, {"name": "煲仔菜", "categories": ["DINNER", "HEARTY"]}, {"name": "燜麵", "categories": ["LUNCH", "DINNER"]}, {"name": "涼拌菜", "categories": ["LUNCH", "DINNER", "VEGETARIAN"]}, {"name": "沙拉", "categories": ["LUNCH", "DINNER", "VEGETARIAN", "HEALTHY"]}, {"name": "水果拼盤", "categories": ["BREAKFAST", "DESSERT", "HEALTHY"]}, {"name": "果汁", "categories": ["BREAKFAST", "HEALTHY"]}, {"name": "酸奶", "categories": ["BREAKFAST", "HEALTHY"]}, {"name": "麥片", "categories": ["BREAKFAST", "HEALTHY"]}, {"name": "三文治", "categories": ["BREAKFAST", "LUNCH"]}, {"name": "漢堡包", "categories": ["LUNCH", "DINNER"]}];
 const DAYS = ['一','二','三','四','五','六','日'];
+const CATS = [
+  { key: 'BREAKFAST', label: '早餐' },
+  { key: 'LUNCH',     label: '午餐' },
+  { key: 'DINNER',    label: '晚餐' },
+  { key: 'SNACK',     label: '小食' },
+  { key: 'DESSERT',   label: '甜品' },
+];
 const MEAL_META = [
   { key: 'BREAKFAST', label: '早餐', cls: 'bf' },
   { key: 'LUNCH',     label: '午餐', cls: 'lu' },
   { key: 'DINNER',    label: '晚餐', cls: 'di' },
 ];
-let plan = null;       // plan[day][mealKey] = [dish names]
-let selectedDay = (new Date().getDay() + 6) % 7;  // Mon=0
+const CAT_LABEL = Object.fromEntries(CATS.map(c => [c.key, c.label]));
 
-function poolFor(mealKey) {
-  return MEALS.filter(m => m.categories.includes(mealKey));
+let plan = null;
+let selectedDay = (new Date().getDay() + 6) % 7;
+let foodFilter = 'ALL';
+let customMeals = [];
+let deletedNames = new Set();
+let rules = { BREAKFAST: [], LUNCH: [], DINNER: [] };
+
+/* ---------- storage ---------- */
+function saveLS(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
+function loadLS(k) { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : null; } catch(e) { return null; } }
+
+function allMeals() {
+  const builtin = BUILTIN_MEALS.filter(m => !deletedNames.has(m.name));
+  return builtin.concat(customMeals);
 }
-function pick3(pool, exclude=[]) {
-  const avail = pool.filter(m => !exclude.includes(m.name));
-  const shuffled = [...avail].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, 3).map(m => m.name);
+function poolFor(mealKey) {
+  return allMeals().filter(m => m.categories.includes(mealKey));
+}
+
+/* ---------- generation (with rules) ---------- */
+function pick3(pool, mealKey, exclude=[]) {
+  const keywords = rules[mealKey] || [];
+  const used = new Set(exclude);
+  const result = [];
+  // satisfy rule keywords first
+  for (const kw of keywords) {
+    if (result.length >= 3) break;
+    const cands = pool.filter(m => !used.has(m.name) && m.name.includes(kw));
+    if (cands.length) {
+      const p = cands[Math.floor(Math.random() * cands.length)];
+      result.push(p.name); used.add(p.name);
+    }
+  }
+  // fill the rest randomly
+  const rest = pool.filter(m => !used.has(m.name)).sort(() => Math.random() - 0.5);
+  while (result.length < 3 && rest.length) {
+    const m = rest.pop();
+    result.push(m.name); used.add(m.name);
+  }
+  return result;
 }
 function generateWeek() {
   plan = [];
   for (let d = 0; d < 7; d++) {
     const day = {};
-    for (const meta of MEAL_META) {
-      day[meta.key] = pick3(poolFor(meta.key));
-    }
+    for (const meta of MEAL_META) day[meta.key] = pick3(poolFor(meta.key), meta.key);
     plan.push(day);
   }
-  save(); render();
+  saveLS('mealPlanV2', plan); render();
 }
 function shuffleMeal(dayIdx, mealKey) {
-  const exclude = plan[dayIdx][mealKey];
-  plan[dayIdx][mealKey] = pick3(poolFor(mealKey), exclude);
-  save(); render();
+  plan[dayIdx][mealKey] = pick3(poolFor(mealKey), mealKey, plan[dayIdx][mealKey]);
+  saveLS('mealPlanV2', plan); render();
 }
-function save() {
-  try { localStorage.setItem('mealPlanV2', JSON.stringify(plan)); } catch(e) {}
-}
-function load() {
-  try {
-    const raw = localStorage.getItem('mealPlanV2');
-    if (raw) { plan = JSON.parse(raw); return true; }
-  } catch(e) {}
-  return false;
-}
+
+/* ---------- planner render ---------- */
 function render() {
-  // greeting + date
   const now = new Date();
   const h = now.getHours();
-  const greet = h < 11 ? '早晨，今日食乜？' : h < 15 ? '午安，今日食乜？' : '晚安，今晚食乜？';
-  document.getElementById('greeting').textContent = greet;
+  document.getElementById('greeting').textContent =
+    h < 11 ? '早晨，今日食乜？' : h < 15 ? '午安，今日食乜？' : '晚安，今晚食乜？';
   document.getElementById('today').textContent =
     now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日 星期' + DAYS[(now.getDay()+6)%7];
 
-  // hero = selected day dinner
-  const dLabel = selectedDay === ((now.getDay()+6)%7) ? '今晚食乜' : '星期' + DAYS[selectedDay] + '晚餐';
-  document.getElementById('heroLabel').textContent = dLabel;
+  const todayIdx = (now.getDay()+6)%7;
+  document.getElementById('heroLabel').textContent =
+    selectedDay === todayIdx ? '今晚食乜' : '星期' + DAYS[selectedDay] + '晚餐';
   document.getElementById('heroDishes').textContent = plan[selectedDay]['DINNER'].join(' · ');
 
-  // week strip
   const weekEl = document.getElementById('week');
   weekEl.innerHTML = '';
   const base = new Date(now);
-  base.setDate(base.getDate() - ((now.getDay()+6)%7)); // Monday
+  base.setDate(base.getDate() - todayIdx);
   for (let i = 0; i < 7; i++) {
     const dt = new Date(base); dt.setDate(dt.getDate() + i);
     const el = document.createElement('div');
@@ -174,21 +309,145 @@ function render() {
     weekEl.appendChild(el);
   }
 
-  // meals
   const mealsEl = document.getElementById('meals');
   mealsEl.innerHTML = '';
   for (const meta of MEAL_META) {
     const dishes = plan[selectedDay][meta.key];
+    const kw = (rules[meta.key] || []).join('、');
     const card = document.createElement('div');
     card.className = 'meal';
     card.innerHTML =
       '<div class="row"><span class="tag ' + meta.cls + '">' + meta.label + '</span>' +
       '<button class="shuffle" onclick="shuffleMeal(' + selectedDay + ',\'' + meta.key + '\')">🔀 換一換</button></div>' +
-      '<div class="dishes">' + dishes.join(' · ') + '</div>';
+      '<div class="dishes">' + dishes.join(' · ') + '</div>' +
+      (kw ? '<div class="rules-hint">必含：' + kw + '</div>' : '');
     mealsEl.appendChild(card);
   }
 }
-if (!load()) generateWeek(); else render();
+
+/* ---------- tabs ---------- */
+function switchTab(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.tabbar button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (name === 'food') renderFoodList();
+  if (name === 'rules') renderRulesForm();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- food list ---------- */
+function renderFoodList() {
+  // category filter
+  const cf = document.getElementById('catFilter');
+  cf.innerHTML = '';
+  const mkBtn = (key, label) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.className = foodFilter === key ? 'active' : '';
+    b.onclick = () => { foodFilter = key; renderFoodList(); };
+    cf.appendChild(b);
+  };
+  mkBtn('ALL', '全部');
+  CATS.forEach(c => mkBtn(c.key, c.label));
+
+  // add-form categories
+  const nc = document.getElementById('newFoodCats');
+  if (!nc.children.length) {
+    CATS.forEach(c => {
+      const l = document.createElement('label');
+      l.innerHTML = '<input type="checkbox" value="' + c.key + '"><span>' + c.label + '</span>';
+      nc.appendChild(l);
+    });
+  }
+
+  // list
+  const q = (document.getElementById('foodSearch').value || '').trim();
+  const list = document.getElementById('foodList');
+  list.innerHTML = '';
+  const meals = allMeals().filter(m =>
+    (foodFilter === 'ALL' || m.categories.includes(foodFilter)) &&
+    (!q || m.name.includes(q))
+  );
+  const head = document.createElement('div');
+  head.style.cssText = 'font-size:13px;color:var(--ink-soft);margin-bottom:8px;';
+  head.textContent = '共 ' + meals.length + ' 道菜';
+  list.appendChild(head);
+  for (const m of meals) {
+    const el = document.createElement('div');
+    el.className = 'food-item';
+    const isCustom = customMeals.some(c => c.name === m.name);
+    el.innerHTML =
+      '<div><div class="name">' + m.name + (isCustom ? ' ✏️' : '') + '</div>' +
+      '<div class="cats">' + m.categories.map(k => CAT_LABEL[k] || k).join('、') + '</div></div>' +
+      '<button class="del" onclick="deleteFood(\'' + m.name.replace(/'/g, "\\'") + '\')">🗑</button>';
+    list.appendChild(el);
+  }
+}
+function addFood() {
+  const name = document.getElementById('newFoodName').value.trim();
+  if (!name) { alert('請輸入菜式名稱'); return; }
+  if (allMeals().some(m => m.name === name)) { alert('呢道菜已經有喇'); return; }
+  const cats = [...document.querySelectorAll('#newFoodCats input:checked')].map(i => i.value);
+  if (!cats.length) { alert('請揀至少一個分類'); return; }
+  // if it was deleted before, un-delete instead
+  deletedNames.delete(name);
+  customMeals = customMeals.filter(m => m.name !== name);
+  // only add to custom if not builtin
+  if (!BUILTIN_MEALS.some(m => m.name === name)) customMeals.push({ name, categories: cats });
+  saveLS('deletedMealsV2', [...deletedNames]);
+  saveLS('customMealsV2', customMeals);
+  document.getElementById('newFoodName').value = '';
+  document.querySelectorAll('#newFoodCats input:checked').forEach(i => i.checked = false);
+  renderFoodList();
+}
+function deleteFood(name) {
+  if (!confirm('確定刪除「' + name + '」？')) return;
+  customMeals = customMeals.filter(m => m.name !== name);
+  if (BUILTIN_MEALS.some(m => m.name === name)) deletedNames.add(name);
+  saveLS('deletedMealsV2', [...deletedNames]);
+  saveLS('customMealsV2', customMeals);
+  renderFoodList();
+}
+
+/* ---------- rules ---------- */
+function renderRulesForm() {
+  const form = document.getElementById('rulesForm');
+  form.innerHTML = '';
+  const examples = {
+    BREAKFAST: '例如：蛋, 麥片, 生果',
+    LUNCH: '例如：菜, 肉',
+    DINNER: '例如：魚, 菜',
+  };
+  for (const meta of MEAL_META) {
+    const card = document.createElement('div');
+    card.className = 'rule-card';
+    card.innerHTML =
+      '<div class="title">' + meta.label + '必含</div>' +
+      '<div class="desc">出餐嗰陣，每樣關鍵字會盡量揀一道個名有嗰個字嘅餸。用半形逗號分開。</div>' +
+      '<input type="text" id="rule-' + meta.key + '" placeholder="' + examples[meta.key] + '" value="' + (rules[meta.key] || []).join(', ') + '">' +
+      '<div class="eg">留空 = 唔設限，隨機出</div>';
+    form.appendChild(card);
+  }
+}
+function saveRules() {
+  for (const meta of MEAL_META) {
+    const v = document.getElementById('rule-' + meta.key).value;
+    rules[meta.key] = v.split(',').map(s => s.trim()).filter(s => s);
+  }
+  saveLS('mealRulesV2', rules);
+  alert('規則儲存咗！下次「重新計劃」會跟新規則出餐。');
+}
+
+/* ---------- init ---------- */
+(function init() {
+  customMeals = loadLS('customMealsV2') || [];
+  deletedNames = new Set(loadLS('deletedMealsV2') || []);
+  rules = loadLS('mealRulesV2') || { BREAKFAST: [], LUNCH: [], DINNER: [] };
+  const saved = loadLS('mealPlanV2');
+  if (saved && saved.length === 7) { plan = saved; render(); }
+  else generateWeek();
+})();
 </script>
 </body>
 </html>
