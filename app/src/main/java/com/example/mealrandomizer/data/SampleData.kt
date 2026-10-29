@@ -126,7 +126,7 @@ val sampleMeals = listOf(
         description = "炸春卷",
         cookingTimeMinutes = 30,
         calories = 300,
-        categories = listOf(Category.BREAKFAST, Category.SNACK)
+        categories = listOf(Category.BREAKFAST, Category.SNACK, Category.LUNCH)
     ),
     Meal(
         name = "蘿蔔糕",
@@ -161,7 +161,7 @@ val sampleMeals = listOf(
         description = "港式炒麵",
         cookingTimeMinutes = 25,
         calories = 500,
-        categories = listOf(Category.BREAKFAST, Category.LUNCH)
+        categories = listOf(Category.BREAKFAST, Category.LUNCH, Category.DINNER)
     ),
     Meal(
         name = "豬腸粉",
@@ -781,13 +781,6 @@ val sampleMeals = listOf(
         categories = listOf(Category.SNACK, Category.LUNCH)
     ),
     Meal(
-        name = "春卷",
-        description = "炸春卷",
-        cookingTimeMinutes = 30,
-        calories = 300,
-        categories = listOf(Category.SNACK, Category.LUNCH)
-    ),
-    Meal(
         name = "煎餃子",
         description = "煎豬肉餃子",
         cookingTimeMinutes = 35,
@@ -806,13 +799,6 @@ val sampleMeals = listOf(
         description = "簡單炒飯",
         cookingTimeMinutes = 20,
         calories = 500,
-        categories = listOf(Category.LUNCH, Category.DINNER)
-    ),
-    Meal(
-        name = "炒麵",
-        description = "簡單炒麵",
-        cookingTimeMinutes = 20,
-        calories = 550,
         categories = listOf(Category.LUNCH, Category.DINNER)
     ),
     Meal(
